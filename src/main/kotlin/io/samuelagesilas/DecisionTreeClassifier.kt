@@ -7,7 +7,7 @@ class DecisionTreeClassifier<Classification>(private val trainingModel: List<Tra
 
     val rootGiniImpurity: Double = this.calculateGiniImpurity(trainingModel)
     val sortedPredicates: Iterator<InformationGain<Classification>> = this.calculateInformationGain(rows = trainingModel)
-        .sortedByDescending { it.avgImpurity }.iterator()
+            .sortedByDescending { it.avgImpurity }.iterator()
 
     init {
         //Use sortedPredicates to build decision tree
@@ -16,12 +16,12 @@ class DecisionTreeClassifier<Classification>(private val trainingModel: List<Tra
     private fun calculateGiniImpurity(trainingModelRows: List<TrainingModeledRow<Classification>>): Double {
         val classificationCounts: MutableMap<Classification, Int> = mutableMapOf()
         val distinctClasses: List<TrainingModeledRow<Classification>> =
-            trainingModelRows.distinctBy { it.classification() }
+                trainingModelRows.distinctBy { it.classification() }
         distinctClasses.forEach { trainingModelRow: TrainingModeledRow<Classification> ->
             classificationCounts[trainingModelRow.classification()] = trainingModelRows
-                .count { m: TrainingModeledRow<Classification> ->
-                    m.classification()!!.toString() == trainingModelRow.classification().toString()
-                }
+                    .count { m: TrainingModeledRow<Classification> ->
+                        m.classification()!!.toString() == trainingModelRow.classification().toString()
+                    }
         }
         val probabilities: MutableList<Double> = mutableListOf()
         classificationCounts.forEach { _, v ->
@@ -45,7 +45,7 @@ class DecisionTreeClassifier<Classification>(private val trainingModel: List<Tra
 
     private fun calculateInformationGain(rows: List<TrainingModeledRow<Classification>>): MutableList<InformationGain<Classification>> {
         val predicateInformationGain: MutableList<InformationGain<Classification>> =
-            mutableListOf<InformationGain<Classification>>()
+                mutableListOf<InformationGain<Classification>>()
         val p = predicates as List<Predicate<TrainingModeledRow<Classification>>>
         p.iterator().forEach { predicate: Predicate<TrainingModeledRow<Classification>> ->
             val result: PredicateResult<Classification> = evaluatePredicate(predicate)
@@ -54,7 +54,7 @@ class DecisionTreeClassifier<Classification>(private val trainingModel: List<Tra
 
             //weighted average of each question
             val avgImpurity: Double = (result.left.size.toDouble() / rows.size) * leftGiniImpurity
-                .plus(result.right.size.toDouble() / rows.size) * rightGiniImpurity
+                    .plus(result.right.size.toDouble() / rows.size) * rightGiniImpurity
             predicateInformationGain.add(InformationGain(predicate, avgImpurity))
         }
         return predicateInformationGain
