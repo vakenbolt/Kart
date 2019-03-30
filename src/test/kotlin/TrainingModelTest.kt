@@ -10,7 +10,10 @@ import org.junit.jupiter.api.Test
 data class TestTrainingModelRow<T>(val diagnosisSymptom1: Symptom,
                                    val diagnosisSymptom2: Symptom,
                                    val diagnosis: Diagnosis) : TrainingModeledRow<T> {
+
+
     override fun classification(): T {
+        @Suppress("UNCHECKED_CAST")
         return diagnosis as T
     }
 }
