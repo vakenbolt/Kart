@@ -3,14 +3,14 @@ package io.samuelagesilas
 import kotlin.math.pow
 
 /**
- * Main class for the [DecisionTreeClassifier] where [T] indicates the type associated with the Classification column
+ * Main class for the [DecisionTreeClassifier] where [T] indicates the type associated with the classification column
  * in the training model.
  * @param trainingModel: The [List] of[TrainingModeledRow]'s making up the training model used to build the decision
  * tree.
- * @param predicates: The [List] of [Predicate]'s used to query the training model.
+ * @param predicateFunctions: The [List] of [PredicateFunction]'s used to query the training model.
  */
 class DecisionTreeClassifier<T>(private val trainingModel: List<TrainingModeledRow<T>>,
-                                private val predicates: List<Predicate<*>>) {
+                                private val predicateFunctions: List<PredicateFunction<*>>) {
 
     /**
      * The calculated Gini impurity for the given [trainingModel].
@@ -18,19 +18,18 @@ class DecisionTreeClassifier<T>(private val trainingModel: List<TrainingModeledR
     val rootGiniImpurity: Double = this.calculateGiniImpurity(trainingModel)
 
     /**
-     * [Iterator] associated to the list of predicates sorted in descending order by information gain.
+     * [Iterator] associated to the list of predicate functions sorted in descending order by information gain.
      */
-    val sortedPredicates: Iterator<InformationGain<T>> = this.calculateInformationGain(rows = trainingModel)
-            .sortedByDescending { it.informationGain }.iterator()
+    val sortedPredicates: List<PredicateNode<T>> = this.calculateInformationGain(rows = trainingModel)
+            .sortedByDescending { it.predicate.informationGain }
 
     private fun calculateGiniImpurity(trainingModelRows: List<TrainingModeledRow<T>>): Double {
         val classificationCounts: MutableMap<T, Int> = mutableMapOf()
         val distinctClasses: List<TrainingModeledRow<T>> = trainingModelRows.distinctBy { it.classification() }
         distinctClasses.forEach { trainingModelRow: TrainingModeledRow<T> ->
-            classificationCounts[trainingModelRow.classification()] = trainingModelRows
-                    .count { m: TrainingModeledRow<T> ->
-                        m.classification()!!.toString() == trainingModelRow.classification().toString()
-                    }
+            classificationCounts[trainingModelRow.classification()] = trainingModelRows.count { m: TrainingModeledRow<T> ->
+                m.classification()!!.toString() == trainingModelRow.classification().toString()
+            }
         }
         val probabilities: MutableList<Double> = mutableListOf()
         classificationCounts.forEach { _, v ->
@@ -39,11 +38,12 @@ class DecisionTreeClassifier<T>(private val trainingModel: List<TrainingModeledR
         return 1 - probabilities.sum()
     }
 
-    private fun evaluatePredicate(p: Predicate<TrainingModeledRow<T>>): PredicateResult<T> {
+    private fun evaluatePredicate(p: PredicateFunction<TrainingModeledRow<T>>,
+                                  trainingModel: List<TrainingModeledRow<T>>): PredicateResult<T> {
         val resolvedAsTrue: MutableList<TrainingModeledRow<T>> = mutableListOf()
         val resolvedAsFalse: MutableList<TrainingModeledRow<T>> = mutableListOf()
         trainingModel.iterator().forEach { row: TrainingModeledRow<T> ->
-            when (p.invoke(row)) {
+            when (p.function.invoke(row)) {
                 true -> resolvedAsTrue.add(row)
                 false -> resolvedAsFalse.add(row)
             }
@@ -51,23 +51,57 @@ class DecisionTreeClassifier<T>(private val trainingModel: List<TrainingModeledR
         return PredicateResult(left = resolvedAsTrue.toList(), right = resolvedAsFalse.toList())
     }
 
-    private fun calculateInformationGain(rows: List<TrainingModeledRow<T>>): List<InformationGain<T>> {
-        val predicateInformationGain: MutableList<InformationGain<T>> = mutableListOf()
+    private fun calculateInformationGain(rows: List<TrainingModeledRow<T>>): List<PredicateNode<T>> {
+        val predicateInformationGain: MutableList<PredicateNode<T>> = mutableListOf()
         @Suppress("UNCHECKED_CAST")
-        val p = predicates as List<Predicate<TrainingModeledRow<T>>>
-        p.iterator().forEach { predicate: Predicate<TrainingModeledRow<T>> ->
-            val result: PredicateResult<T> = evaluatePredicate(predicate)
+        val p = predicateFunctions as List<PredicateFunction<TrainingModeledRow<T>>>
+        p.iterator().forEach { predicateFunction: PredicateFunction<TrainingModeledRow<T>> ->
+            val result: PredicateResult<T> = evaluatePredicate(predicateFunction, this.trainingModel)
             val leftGiniImpurity: Double = this.calculateGiniImpurity(trainingModelRows = result.left)
             val rightGiniImpurity: Double = this.calculateGiniImpurity(trainingModelRows = result.right)
 
             //weighted average of each question
             val avgImpurity: Double = (result.left.size.toDouble() / rows.size) * leftGiniImpurity
                     .plus(result.right.size.toDouble() / rows.size) * rightGiniImpurity
-            val informationGain : Double = this.rootGiniImpurity - avgImpurity
-            predicateInformationGain.add(InformationGain(predicate, avgImpurity, informationGain))
+            val informationGain: Double = this.rootGiniImpurity - avgImpurity
+            predicateInformationGain.add(PredicateNode(Predicate(predicateFunction, avgImpurity, informationGain)))
         }
         return predicateInformationGain.toList()
+    }
 
+    private tailrec fun processNode(currentNode: PredicateNode<T>,
+                                    trainingModel: List<TrainingModeledRow<T>>,
+                                    sortedPredicates: Iterator<PredicateNode<T>>) {
+        val result: PredicateResult<T> = this.evaluatePredicate(currentNode.predicate.predicateFunction, trainingModel)
+
+        //add right sight of to queue
+        when {
+            (result.left.size == 1) -> {
+                //node is a leaf
+                return
+            }
+            (result.right.size == 1) -> {
+                //node is a leaf
+                return
+            }
+            (result.left.size > 1) -> {
+                //process next node
+                when (sortedPredicates.hasNext()) {
+                    true -> {
+                        val nextNode: PredicateNode<T> = sortedPredicates.next()
+                        currentNode.leftNode = nextNode
+                        processNode(nextNode, result.left, sortedPredicates)
+                    }
+                    false -> {
+                        //node is unresolved perform a guess
+                    }
+                }
+            }
+        }
+    }
+
+    init {
+        this.sortedPredicates.forEach { println("${it.predicate.predicateFunction.label}, ${it.predicate.avgImpurity}, ${it.predicate.informationGain}") }
     }
 
     fun evaluate(row: TrainingModeledRow<T>): T {
@@ -78,11 +112,3 @@ class DecisionTreeClassifier<T>(private val trainingModel: List<TrainingModeledR
         TODO("not implemented")
     }
 }
-
-
-/**
- * Data class indicating the [predicate] associated with the [avgImpurity] and [informationGain].
- */
-data class InformationGain<Classification>(val predicate: Predicate<TrainingModeledRow<Classification>>,
-                                           val avgImpurity: Double,
-                                           val informationGain: Double)

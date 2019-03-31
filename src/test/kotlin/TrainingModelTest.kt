@@ -1,7 +1,8 @@
 import Diagnosis.*
 import Symptom.*
 import io.samuelagesilas.DecisionTreeClassifier
-import io.samuelagesilas.Predicate
+import io.samuelagesilas.PredicateFunction
+import io.samuelagesilas.PredicateNode
 import io.samuelagesilas.TrainingModeledRow
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
@@ -48,33 +49,39 @@ class TrainingModelTest {
             assertEquals(DiagnosisE, this.classification())
         }
 
-
-        val q1: Predicate<TestTrainingModelRow<Diagnosis>> = {
+        val q1: PredicateFunction<TestTrainingModelRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q1) {
             it.diagnosisSymptom1 == Symptom.Symptom1 || it.diagnosisSymptom2 == Symptom.Symptom1
         }
-        val q2: Predicate<TestTrainingModelRow<Diagnosis>> = {
+        val q2: PredicateFunction<TestTrainingModelRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q2) {
             it.diagnosisSymptom1 == Symptom.Symptom2 || it.diagnosisSymptom2 == Symptom.Symptom2
         }
-        val q3: Predicate<TestTrainingModelRow<Diagnosis>> = {
+        val q3: PredicateFunction<TestTrainingModelRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q3) {
             it.diagnosisSymptom1 == Symptom.Symptom3 || it.diagnosisSymptom2 == Symptom.Symptom3
         }
-        val q4: Predicate<TestTrainingModelRow<Diagnosis>> = {
+        val q4: PredicateFunction<TestTrainingModelRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q4) {
             it.diagnosisSymptom1 == Symptom.Symptom4 || it.diagnosisSymptom2 == Symptom.Symptom4
         }
-        val q5: Predicate<TestTrainingModelRow<Diagnosis>> = {
+        val q5: PredicateFunction<TestTrainingModelRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q5) {
             it.diagnosisSymptom1 == Symptom.Symptom5 || it.diagnosisSymptom2 == Symptom.Symptom5
         }
 
         //FunctionalPredicates<TestTrainingModelRow<Diagnosis>>
-        val p: List<Predicate<TestTrainingModelRow<Diagnosis>>> = listOf(q1, q2, q3, q4, q5)
-        assertTrue(p[0].invoke(trainingModel[0] as TestTrainingModelRow<Diagnosis>))
-        Assertions.assertTrue(p.get(0).invoke(trainingModel[1] as TestTrainingModelRow<Diagnosis>))
-        assertFalse(p.get(1).invoke(trainingModel[4] as TestTrainingModelRow<Diagnosis>))
+        val p: List<PredicateFunction<TestTrainingModelRow<Diagnosis>>> = listOf(q1, q2, q3, q4, q5)
+        assertTrue(p[0].function.invoke(trainingModel[0] as TestTrainingModelRow<Diagnosis>))
+        Assertions.assertTrue(p.get(0).function.invoke(trainingModel[1] as TestTrainingModelRow<Diagnosis>))
+        assertFalse(p.get(1).function.invoke(trainingModel[4] as TestTrainingModelRow<Diagnosis>))
 
 
         val d: DecisionTreeClassifier<Diagnosis> = DecisionTreeClassifier(trainingModel = trainingModel,
-                                                                          predicates = p)
+                predicateFunctions = p)
+
+        val i : Iterator<PredicateNode<Diagnosis>> = d.sortedPredicates.iterator()
+        assertEquals("Q1", i.next().predicate.predicateFunction.label)
+        assertEquals("Q2", i.next().predicate.predicateFunction.label)
+        assertEquals("Q4", i.next().predicate.predicateFunction.label)
+        assertEquals("Q3", i.next().predicate.predicateFunction.label)
+        assertEquals("Q5", i.next().predicate.predicateFunction.label)
+
         println(d.rootGiniImpurity)
-        d.sortedPredicates.forEach { println(it) }
     }
 }
