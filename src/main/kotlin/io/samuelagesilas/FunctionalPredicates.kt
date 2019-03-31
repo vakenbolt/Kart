@@ -15,7 +15,7 @@ data class PredicateFunction<T>(val label: String,
  * @param right: A [List] of [TrainingModeledRow] if the invocation result of the predicate lambda is false
  */
 data class PredicateResult<T>(val left: List<TrainingModeledRow<T>>,
-                                           val right: List<TrainingModeledRow<T>>)
+                              val right: List<TrainingModeledRow<T>>)
 
 
 /**
@@ -31,8 +31,9 @@ data class Predicate<T>(val predicateFunction: PredicateFunction<TrainingModeled
  * Node used in the [DecisionTreeClassifier] to build the decision tree.
  * [T] indicates the type associated with the classification column in the training model.
  */
-data class PredicateNode<T>(val predicate: Predicate<T>,
+data class PredicateNode<T>(var predicate: Predicate<T>,
+                            var predicateIndex: Int?,
+                            var parentNodeResults: List<TrainingModeledRow<T>>?,
+                            var result: PredicateResult<T>? = null,
                             var leftNode: PredicateNode<T>? = null,
-                            var rightNode: PredicateNode<T>? = null) {
-
-}
+                            var rightNode: PredicateNode<T>? = null)

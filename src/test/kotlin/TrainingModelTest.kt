@@ -1,9 +1,6 @@
 import Diagnosis.*
 import Symptom.*
-import io.samuelagesilas.DecisionTreeClassifier
-import io.samuelagesilas.PredicateFunction
-import io.samuelagesilas.PredicateNode
-import io.samuelagesilas.TrainingModeledRow
+import io.samuelagesilas.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -75,12 +72,12 @@ class TrainingModelTest {
         val d: DecisionTreeClassifier<Diagnosis> = DecisionTreeClassifier(trainingModel = trainingModel,
                 predicateFunctions = p)
 
-        val i : Iterator<PredicateNode<Diagnosis>> = d.sortedPredicates.iterator()
-        assertEquals(QuestionLabels.Q1, i.next().predicate.predicateFunction.label)
-        assertEquals(QuestionLabels.Q2, i.next().predicate.predicateFunction.label)
-        assertEquals(QuestionLabels.Q4, i.next().predicate.predicateFunction.label)
-        assertEquals(QuestionLabels.Q3, i.next().predicate.predicateFunction.label)
-        assertEquals(QuestionLabels.Q5, i.next().predicate.predicateFunction.label)
+        val i : Iterator<Predicate<Diagnosis>> = d.sortedPredicates.iterator()
+        assertEquals(QuestionLabels.Q1, i.next().predicateFunction.label)
+        assertEquals(QuestionLabels.Q2, i.next().predicateFunction.label)
+        assertEquals(QuestionLabels.Q4, i.next().predicateFunction.label)
+        assertEquals(QuestionLabels.Q3, i.next().predicateFunction.label)
+        assertEquals(QuestionLabels.Q5, i.next().predicateFunction.label)
 
         println(d.rootGiniImpurity)
     }
