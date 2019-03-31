@@ -76,11 +76,11 @@ class TrainingModelTest {
                 predicateFunctions = p)
 
         val i : Iterator<PredicateNode<Diagnosis>> = d.sortedPredicates.iterator()
-        assertEquals("Q1", i.next().predicate.predicateFunction.label)
-        assertEquals("Q2", i.next().predicate.predicateFunction.label)
-        assertEquals("Q4", i.next().predicate.predicateFunction.label)
-        assertEquals("Q3", i.next().predicate.predicateFunction.label)
-        assertEquals("Q5", i.next().predicate.predicateFunction.label)
+        assertEquals(QuestionLabels.Q1, i.next().predicate.predicateFunction.label)
+        assertEquals(QuestionLabels.Q2, i.next().predicate.predicateFunction.label)
+        assertEquals(QuestionLabels.Q4, i.next().predicate.predicateFunction.label)
+        assertEquals(QuestionLabels.Q3, i.next().predicate.predicateFunction.label)
+        assertEquals(QuestionLabels.Q5, i.next().predicate.predicateFunction.label)
 
         println(d.rootGiniImpurity)
     }

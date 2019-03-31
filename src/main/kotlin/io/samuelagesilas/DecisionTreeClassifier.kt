@@ -18,7 +18,7 @@ class DecisionTreeClassifier<T>(private val trainingModel: List<TrainingModeledR
     val rootGiniImpurity: Double = this.calculateGiniImpurity(trainingModel)
 
     /**
-     * [Iterator] associated to the list of predicate functions sorted in descending order by information gain.
+     * [List] associated to the list of predicate functions sorted in descending order by information gain.
      */
     val sortedPredicates: List<PredicateNode<T>> = this.calculateInformationGain(rows = trainingModel)
             .sortedByDescending { it.predicate.informationGain }

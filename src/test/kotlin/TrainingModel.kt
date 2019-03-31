@@ -27,11 +27,11 @@ enum class Diagnosis {
 }
 
 object QuestionLabels {
-    const val Q1 = "Q1"
-    const val Q2 = "Q2"
-    const val Q3 = "Q3"
-    const val Q4 = "Q4"
-    const val Q5 = "Q5"
+    const val Q1 = "Question 1"
+    const val Q2 = "Question 2"
+    const val Q3 = "Question 3"
+    const val Q4 = "Question 4"
+    const val Q5 = "Question 5"
 }
 
 val trainingModel: List<TrainingModeledRow<Diagnosis>> = listOf(
