@@ -14,15 +14,15 @@ repositories {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit"
 }
 
 compileKotlin {
-    kotlinOptions.jvmTarget = '1.8'
+    kotlinOptions.jvmTarget = '1.6'
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = '1.8'
+    kotlinOptions.jvmTarget = '1.6'
 }
