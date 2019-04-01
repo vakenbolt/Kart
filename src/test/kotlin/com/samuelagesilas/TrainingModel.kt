@@ -35,9 +35,9 @@ object QuestionLabels {
     const val Q5 = "Question 5"
 }
 
-val trainingModel: List<DecisionTreeClassifierDataRow<Diagnosis>> = listOf(DataRow(Symptom1, Symptom2, DiagnosisA),
-                                                                           DataRow(Symptom1, Symptom3, DiagnosisB),
-                                                                           DataRow(Symptom4, Symptom5, DiagnosisC),
-                                                                           DataRow(Symptom1, Symptom3, DiagnosisD),
-                                                                           DataRow(Symptom1, Symptom5, DiagnosisE)
+val trainingModel: List<DecisionTreeClassifierRow<Diagnosis>> = listOf(DataRow(Symptom1, Symptom2, DiagnosisA),
+                                                                       DataRow(Symptom1, Symptom3, DiagnosisB),
+                                                                       DataRow(Symptom4, Symptom5, DiagnosisC),
+                                                                       DataRow(Symptom1, Symptom3, DiagnosisD),
+                                                                       DataRow(Symptom1, Symptom5, DiagnosisE)
 )
