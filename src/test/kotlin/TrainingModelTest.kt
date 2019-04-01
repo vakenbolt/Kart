@@ -1,12 +1,12 @@
-import Symptom.*
 import Diagnosis.*
+import Symptom.*
 import io.samuelagesilas.DecisionTreeClassifier
 import io.samuelagesilas.DecisionTreeClassifierDataRow
 import io.samuelagesilas.Predicate
 import io.samuelagesilas.PredicateFunction
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import kotlin.math.pow
 
 data class DataRow<T>(val diagnosisSymptom1: Symptom,
                       val diagnosisSymptom2: Symptom,
@@ -65,10 +65,10 @@ class TrainingModelTest {
 
         //FunctionalPredicates<DataRow<Diagnosis>>
         val p: List<PredicateFunction<DataRow<Diagnosis>>> = listOf(q1, q2, q3, q4, q5)
-        assertTrue(p[0].function.invoke(trainingModel[0] as DataRow<Diagnosis>))
-        Assertions.assertTrue(p.get(0).function.invoke(trainingModel[1] as DataRow<Diagnosis>))
-        assertFalse(p.get(1).function.invoke(trainingModel[4] as DataRow<Diagnosis>))
-
+//        assertTrue(p[0].function.invoke(trainingModel[0] as DataRow<Diagnosis>))
+//        Assertions.assertTrue(p.get(0).function.invoke(trainingModel[1] as DataRow<Diagnosis>))
+//        assertFalse(p.get(1).function.invoke(trainingModel[4] as DataRow<Diagnosis>))
+//
 
         val d: DecisionTreeClassifier<Diagnosis> = DecisionTreeClassifier(trainingModel = trainingModel,
                                                                           predicateFunctions = p)
@@ -94,5 +94,11 @@ class TrainingModelTest {
                                                  DataRow(Symptom1, Symptom5)
         )
         println(d.evaluate(listOf(t.first(), t[2])))
+        val n = 1 - listOf((1.toDouble() / 5).pow(2),
+                           (1.toDouble() / 5).pow(2),
+                           (1.toDouble() / 5).pow(2),
+                           (1.toDouble() / 5).pow(2),
+                           (1.toDouble() / 5).pow(2)).sum()
+        assertEquals(d.rootGiniImpurity, n)
     }
 }
