@@ -125,7 +125,6 @@ class DecisionTreeClassifier<T>(
  * Builds the decision tree using the provided [decisionTreeClassifier].
  */
 class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTreeClassifier<T>) {
-
     private val sortedPredicates: List<Predicate<T>> = decisionTreeClassifier.sortedPredicates
 
     private fun processNode(rootNode: PredicateNode<T>,
@@ -163,5 +162,20 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
             processNode(childNodes.poll(), childNodes, decisionTreeClassifier::evaluatePredicate)
         }
         return rootNode
+    }
+}
+
+
+/**
+ * Interface for any data type used as a row in a training model.
+ * [T] indicates the type associated with the classification column in the training model.
+ */
+abstract class DecisionTreeClassifierDataRow<T> {
+
+    /**
+     * Returns the typed value associated with the classification column in the training model.
+     */
+    open fun classification(): T? {
+        return null
     }
 }
