@@ -8,7 +8,7 @@ import kotlin.math.pow
 
 data class DataRow<T>(val diagnosisSymptom1: Symptom,
                       val diagnosisSymptom2: Symptom,
-                      var diagnosis: Diagnosis? = null) : DecisionTreeClassifierRow<T>() {
+                      var diagnosis: Diagnosis? = null) : DecisionTreeClassifierDataRow<T>() {
     override fun classification(): T {
         @Suppress("UNCHECKED_CAST")
         return diagnosis as T
