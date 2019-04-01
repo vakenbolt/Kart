@@ -7,9 +7,11 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import kotlin.math.pow
 
-data class DataRow<T>(val diagnosisSymptom1: Symptom,
-                      val diagnosisSymptom2: Symptom,
-                      var diagnosis: Diagnosis? = null) : DecisionTreeClassifierDataRow<T>() {
+data class DataRow<T>(
+    val diagnosisSymptom1: Symptom,
+    val diagnosisSymptom2: Symptom,
+    var diagnosis: Diagnosis? = null
+) : DecisionTreeClassifierDataRow<T>() {
     override fun classification(): T {
         @Suppress("UNCHECKED_CAST")
         return diagnosis as T
@@ -63,8 +65,10 @@ class TrainingModelTest {
         }
 
         val p: List<PredicateFunction<DataRow<Diagnosis>>> = listOf(q1, q2, q3, q4, q5)
-        val classifier: DecisionTreeClassifier<Diagnosis> = DecisionTreeClassifier(trainingModel = trainingModel,
-                                                                                   predicateFunctions = p)
+        val classifier: DecisionTreeClassifier<Diagnosis> = DecisionTreeClassifier(
+            trainingModel = trainingModel,
+            predicateFunctions = p
+        )
         classifier.sortedPredicates.forEach { println("${it.predicateFunction.label}, ${it.avgImpurity}, ${it.informationGain}") }
 
         val i: Iterator<Predicate<Diagnosis>> = classifier.sortedPredicates.iterator()
@@ -77,26 +81,29 @@ class TrainingModelTest {
         assertEquals(classifier.evaluate(trainingModel.first()), DiagnosisA)
         assertEquals(classifier.evaluate(trainingModel[2]), DiagnosisC)
 
-        val t: List<DataRow<Diagnosis>> = listOf(DataRow(Symptom1, Symptom2),
-                                                 DataRow(Symptom1, Symptom3),
-                                                 DataRow(Symptom2, Symptom5),
-                                                 DataRow(Symptom3, Symptom1),
-                                                 DataRow(Symptom2, Symptom5)
+        val data: List<DataRow<Diagnosis>> = listOf(
+            DataRow(Symptom1, Symptom2),
+            DataRow(Symptom1, Symptom3),
+            DataRow(Symptom2, Symptom5),
+            DataRow(Symptom3, Symptom1),
+            DataRow(Symptom2, Symptom5)
         )
-        with(classifier.evaluate(listOf(t.first(), t[2]))) {
+        with(classifier.evaluate(listOf(data.first(), data[2]))) {
             assertEquals(this[0], DiagnosisA)
             assertEquals(this[1], DiagnosisC)
         }
-        assertEquals(DiagnosisC, classifier.evaluate(t[2]))
-        with(classifier.evaluate(t[3])) {
+        assertEquals(DiagnosisC, classifier.evaluate(data[2]))
+        with(classifier.evaluate(data[3])) {
             assertTrue(this == DiagnosisB || this == DiagnosisD)
         }
-        assertEquals(DiagnosisC, classifier.evaluate(t[4]))
-        val n: Double = 1 - listOf((1.toDouble() / 5).pow(2),
-                                   (1.toDouble() / 5).pow(2),
-                                   (1.toDouble() / 5).pow(2),
-                                   (1.toDouble() / 5).pow(2),
-                                   (1.toDouble() / 5).pow(2)).sum()
+        assertEquals(DiagnosisC, classifier.evaluate(data[4]))
+        val n: Double = 1 - listOf(
+            (1.toDouble() / 5).pow(2),
+            (1.toDouble() / 5).pow(2),
+            (1.toDouble() / 5).pow(2),
+            (1.toDouble() / 5).pow(2),
+            (1.toDouble() / 5).pow(2)
+        ).sum()
         assertEquals(classifier.rootGiniImpurity, n)
     }
 }
