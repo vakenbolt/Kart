@@ -1,4 +1,4 @@
-package com.samuelagesilas
+package io.samuelagesilas
 
 /**
  * A predicate lambda identified as [function] and its associated [label].
