@@ -1,3 +1,5 @@
+<img src="https://svgsilh.com/png-512/1296971.png" alt="alt text" width="100" height="100">
+
 ## Kart: Decision Tree Classifier for Kotlin
 
 
