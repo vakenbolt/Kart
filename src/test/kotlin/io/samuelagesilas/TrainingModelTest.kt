@@ -1,7 +1,7 @@
-package com.samuelagesilas
+package io.samuelagesilas
 
-import com.samuelagesilas.Diagnosis.*
-import com.samuelagesilas.Symptom.*
+import io.samuelagesilas.Diagnosis.*
+import io.samuelagesilas.Symptom.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -48,27 +48,33 @@ class TrainingModelTest {
             assertEquals(DiagnosisE, this.classification())
         }
 
-        val q1: PredicateFunction<DataRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q1) {
-            it.diagnosisSymptom1 == Symptom1 || it.diagnosisSymptom2 == Symptom1
-        }
-        val q2: PredicateFunction<DataRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q2) {
-            it.diagnosisSymptom1 == Symptom2 || it.diagnosisSymptom2 == Symptom2
-        }
-        val q3: PredicateFunction<DataRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q3) {
-            it.diagnosisSymptom1 == Symptom3 || it.diagnosisSymptom2 == Symptom3
-        }
-        val q4: PredicateFunction<DataRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q4) {
-            it.diagnosisSymptom1 == Symptom4 || it.diagnosisSymptom2 == Symptom4
-        }
-        val q5: PredicateFunction<DataRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q5) {
-            it.diagnosisSymptom1 == Symptom5 || it.diagnosisSymptom2 == Symptom5
-        }
+        val q1: PredicateFunction<DataRow<Diagnosis>> =
+            PredicateFunction(label = QuestionLabels.Q1) {
+                it.diagnosisSymptom1 == Symptom1 || it.diagnosisSymptom2 == Symptom1
+            }
+        val q2: PredicateFunction<DataRow<Diagnosis>> =
+            PredicateFunction(label = QuestionLabels.Q2) {
+                it.diagnosisSymptom1 == Symptom2 || it.diagnosisSymptom2 == Symptom2
+            }
+        val q3: PredicateFunction<DataRow<Diagnosis>> =
+            PredicateFunction(label = QuestionLabels.Q3) {
+                it.diagnosisSymptom1 == Symptom3 || it.diagnosisSymptom2 == Symptom3
+            }
+        val q4: PredicateFunction<DataRow<Diagnosis>> =
+            PredicateFunction(label = QuestionLabels.Q4) {
+                it.diagnosisSymptom1 == Symptom4 || it.diagnosisSymptom2 == Symptom4
+            }
+        val q5: PredicateFunction<DataRow<Diagnosis>> =
+            PredicateFunction(label = QuestionLabels.Q5) {
+                it.diagnosisSymptom1 == Symptom5 || it.diagnosisSymptom2 == Symptom5
+            }
 
         val p: List<PredicateFunction<DataRow<Diagnosis>>> = listOf(q1, q2, q3, q4, q5)
-        val classifier: DecisionTreeClassifier<Diagnosis> = DecisionTreeClassifier(
-            trainingModel = trainingModel,
-            predicateFunctions = p
-        )
+        val classifier: DecisionTreeClassifier<Diagnosis> =
+            DecisionTreeClassifier(
+                trainingModel = trainingModel,
+                predicateFunctions = p
+            )
         classifier.sortedPredicates.forEach { println("${it.predicateFunction.label}, ${it.avgImpurity}, ${it.informationGain}") }
 
         val i: Iterator<Predicate<Diagnosis>> = classifier.sortedPredicates.iterator()

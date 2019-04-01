@@ -1,4 +1,4 @@
-package com.samuelagesilas
+package io.samuelagesilas
 
 import java.util.*
 import kotlin.math.pow
@@ -10,9 +10,8 @@ import kotlin.math.pow
  * tree.
  * @param predicateFunctions: The [List] of [PredicateFunction]'s used to query the training model.
  */
-class DecisionTreeClassifier<T>(
-        internal val trainingModel: List<DecisionTreeClassifierDataRow<T>>,
-        private val predicateFunctions: List<PredicateFunction<*>>) {
+class DecisionTreeClassifier<T>(internal val trainingModel: List<DecisionTreeClassifierDataRow<T>>,
+                                private val predicateFunctions: List<PredicateFunction<*>>) {
 
     /**
      * The calculated Gini impurity for the given [trainingModel].
@@ -23,17 +22,20 @@ class DecisionTreeClassifier<T>(
      * [List] associated to the list of predicate functions sorted in descending order by information gain.
      */
     val sortedPredicates: List<Predicate<T>> = this.calculateInformationGain(rows = trainingModel)
-            .sortedByDescending { it.informationGain }
+        .sortedByDescending { it.informationGain }
 
     private var decisionTree: PredicateNode<T>
 
     private fun calculateGiniImpurity(trainingModelRows: List<DecisionTreeClassifierDataRow<T>>): Double {
         val classificationCounts: MutableMap<T, Int> = mutableMapOf()
-        val distinctClasses: List<DecisionTreeClassifierDataRow<T>> = trainingModelRows.distinctBy { it.classification() }
+        val distinctClasses: List<DecisionTreeClassifierDataRow<T>> = trainingModelRows.distinctBy {
+            it.classification()
+        }
         distinctClasses.forEach { trainingModelRow: DecisionTreeClassifierDataRow<T> ->
-            classificationCounts[trainingModelRow.classification()!!] = trainingModelRows.count { m: DecisionTreeClassifierDataRow<T> ->
-                m.classification()!!.toString() == trainingModelRow.classification().toString()
-            }
+            classificationCounts[trainingModelRow.classification()!!] =
+                trainingModelRows.count { m: DecisionTreeClassifierDataRow<T> ->
+                    m.classification()!!.toString() == trainingModelRow.classification().toString()
+                }
         }
         val probabilities: MutableList<Double> = mutableListOf()
         classificationCounts.forEach { _, v ->
@@ -69,7 +71,7 @@ class DecisionTreeClassifier<T>(
 
             //weighted average of each question
             val avgImpurity: Double = (result.left.size.toDouble() / rows.size) * leftGiniImpurity
-                    .plus(result.right.size.toDouble() / rows.size) * rightGiniImpurity
+                .plus(result.right.size.toDouble() / rows.size) * rightGiniImpurity
             val informationGain: Double = this.rootGiniImpurity - avgImpurity
             //TODO: Remove any predicates that produce the same information gain as the root predicate.
             //TODO: Remove predicates that have an information gain of 0
@@ -79,11 +81,14 @@ class DecisionTreeClassifier<T>(
     }
 
     private fun classify(node: PredicateNode<T>,
-                         classifications: List<DecisionTreeClassifierDataRow<T>>): DecisionTreeClassifierDataRow<T> = when {
-        (classifications.size == 1) -> classifications.first()
-        (classifications.size > 1) -> classifications[(0..(classifications.size - 1)).random()]
-        else -> classifications[(0..(node.nodeResult!!.size - 1)).random()]
+                         classifications: List<DecisionTreeClassifierDataRow<T>>): DecisionTreeClassifierDataRow<T> {
+        return when {
+            (classifications.size == 1) -> classifications.first()
+            (classifications.size > 1) -> classifications[(0..(classifications.size - 1)).random()]
+            else -> classifications[(0..(node.nodeResult!!.size - 1)).random()]
+        }
     }
+
 
     private tailrec fun evaluateWithTree(row: DecisionTreeClassifierDataRow<T>,
                                          node: PredicateNode<T>): T {
@@ -135,7 +140,8 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
                                                 trainingModel: List<DecisionTreeClassifierDataRow<T>>) -> PredicateResult<T>) {
         if (rootNode.nodeResult!!.size == 1) return
         rootNode.result = evaluatePredicate.invoke(rootNode.predicate.predicateFunction,
-                                                   rootNode.nodeResult!!)
+                                                   rootNode.nodeResult!!
+        )
         val result: PredicateResult<T> = rootNode.result!!
         val predicateIndex: Int = rootNode.predicateIndex!!
         if (result.left.isNotEmpty() && predicateIndex < this.sortedPredicates.lastIndex) {
@@ -156,9 +162,11 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
      */
     internal fun buildDecisionTree(): PredicateNode<T> {
         val childNodes: LinkedList<PredicateNode<T>> = LinkedList()
-        val rootNode: PredicateNode<T> = PredicateNode(predicate = this.sortedPredicates.first(),
-                                                       predicateIndex = 0,
-                                                       nodeResult = this.decisionTreeClassifier.trainingModel)
+        val rootNode: PredicateNode<T> =
+            PredicateNode(predicate = this.sortedPredicates.first(),
+                          predicateIndex = 0,
+                          nodeResult = this.decisionTreeClassifier.trainingModel
+            )
         processNode(rootNode, childNodes, decisionTreeClassifier::evaluatePredicate)
         while (childNodes.size > 0) {
             processNode(childNodes.poll(), childNodes, decisionTreeClassifier::evaluatePredicate)
