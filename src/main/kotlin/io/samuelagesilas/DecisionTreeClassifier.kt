@@ -39,7 +39,7 @@ class DecisionTreeClassifier<T>(internal val trainingModel: List<DecisionTreeCla
         }
         val probabilities: MutableList<Double> = mutableListOf()
         classificationCounts.forEach { _, v ->
-            probabilities.add(v.toDouble().div(trainingModelRows.size).pow(2))
+            probabilities.add((v.toDouble() / trainingModelRows.size).pow(2))
         }
         return 1 - probabilities.sum()
     }
@@ -70,8 +70,8 @@ class DecisionTreeClassifier<T>(internal val trainingModel: List<DecisionTreeCla
             val rightGiniImpurity: Double = this.calculateGiniImpurity(trainingModelRows = result.right)
 
             //weighted average of each question
-            val avgImpurity: Double = (result.left.size.toDouble() / rows.size) * leftGiniImpurity
-                .plus(result.right.size.toDouble() / rows.size) * rightGiniImpurity
+            val avgImpurity: Double = (result.left.size.toDouble() / rows.size) * leftGiniImpurity +
+                    (result.right.size.toDouble() / rows.size) * rightGiniImpurity
             val informationGain: Double = this.rootGiniImpurity - avgImpurity
             //TODO: Remove any predicates that produce the same information gain as the root predicate.
             //TODO: Remove predicates that have an information gain of 0
@@ -162,11 +162,9 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
      */
     internal fun buildDecisionTree(): PredicateNode<T> {
         val childNodes: LinkedList<PredicateNode<T>> = LinkedList()
-        val rootNode: PredicateNode<T> =
-            PredicateNode(predicate = this.sortedPredicates.first(),
-                          predicateIndex = 0,
-                          nodeResult = this.decisionTreeClassifier.trainingModel
-            )
+        val rootNode: PredicateNode<T> = PredicateNode(predicate = this.sortedPredicates.first(),
+                                                       predicateIndex = 0,
+                                                       nodeResult = this.decisionTreeClassifier.trainingModel)
         processNode(rootNode, childNodes, decisionTreeClassifier::evaluatePredicate)
         while (childNodes.size > 0) {
             processNode(childNodes.poll(), childNodes, decisionTreeClassifier::evaluatePredicate)
