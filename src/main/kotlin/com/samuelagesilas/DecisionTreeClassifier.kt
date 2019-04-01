@@ -42,12 +42,15 @@ class DecisionTreeClassifier<T>(
         return 1 - probabilities.sum()
     }
 
-    internal fun evaluatePredicate(p: PredicateFunction<DecisionTreeClassifierDataRow<T>>,
-                                   trainingModel: List<DecisionTreeClassifierDataRow<T>>): PredicateResult<T> {
+    /**
+     * Performs a partition on the current [filteredTrainingData] using the provided [PredicateFunction] [pFunc].
+     */
+    internal fun evaluatePredicate(pFunc: PredicateFunction<DecisionTreeClassifierDataRow<T>>,
+                                   filteredTrainingData: List<DecisionTreeClassifierDataRow<T>>): PredicateResult<T> {
         val resolvedAsTrue: MutableList<DecisionTreeClassifierDataRow<T>> = mutableListOf()
         val resolvedAsFalse: MutableList<DecisionTreeClassifierDataRow<T>> = mutableListOf()
-        trainingModel.iterator().forEach { row: DecisionTreeClassifierDataRow<T> ->
-            when (p.function.invoke(row)) {
+        filteredTrainingData.iterator().forEach { row: DecisionTreeClassifierDataRow<T> ->
+            when (pFunc.function.invoke(row)) {
                 true -> resolvedAsTrue.add(row)
                 false -> resolvedAsFalse.add(row)
             }
@@ -118,6 +121,9 @@ class DecisionTreeClassifier<T>(
 }
 
 
+/**
+ * Builds the decision tree using the provided [decisionTreeClassifier].
+ */
 class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTreeClassifier<T>) {
 
     private val sortedPredicates: List<Predicate<T>> = decisionTreeClassifier.sortedPredicates
@@ -143,6 +149,10 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
         }
     }
 
+    /**
+     * Returns the root node of the generated decision tree classifier. The resulting tree is used by the
+     * [DecisionTreeClassifier] to evaluate data.
+     */
     internal fun buildDecisionTree(): PredicateNode<T> {
         val childNodes: LinkedList<PredicateNode<T>> = LinkedList()
         val rootNode: PredicateNode<T> = PredicateNode(predicate = this.sortedPredicates.first(),
