@@ -5,7 +5,7 @@ package io.samuelagesilas
  * [T] indicates the type associated with the classification column in the training model.
  */
 data class PredicateFunction<T>(val label: String,
-                                val function: (x: T) -> Boolean)
+                                val function: (row: T) -> Boolean)
 
 
 /**
@@ -33,7 +33,7 @@ data class Predicate<T>(val predicateFunction: PredicateFunction<TrainingModeled
  */
 data class PredicateNode<T>(var predicate: Predicate<T>,
                             var predicateIndex: Int?,
-                            var parentNodeResults: List<TrainingModeledRow<T>>?,
+                            var nodeResult: List<TrainingModeledRow<T>>?,
                             var result: PredicateResult<T>? = null,
                             var leftNode: PredicateNode<T>? = null,
                             var rightNode: PredicateNode<T>? = null)

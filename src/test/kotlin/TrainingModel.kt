@@ -34,10 +34,9 @@ object QuestionLabels {
     const val Q5 = "Question 5"
 }
 
-val trainingModel: List<TrainingModeledRow<Diagnosis>> = listOf(
-    TestTrainingModelRow(Symptom1, Symptom2, DiagnosisA),
-    TestTrainingModelRow(Symptom1, Symptom3, DiagnosisB),
-    TestTrainingModelRow(Symptom4, Symptom5, DiagnosisC),
-    TestTrainingModelRow(Symptom1, Symptom3, DiagnosisD),
-    TestTrainingModelRow(Symptom1, Symptom5, DiagnosisE)
+val trainingModel: List<TrainingModeledRow<Diagnosis>> = listOf(TestTrainingModelRow(Symptom1, Symptom2, DiagnosisA),
+                                                                TestTrainingModelRow(Symptom1, Symptom3, DiagnosisB),
+                                                                TestTrainingModelRow(Symptom4, Symptom5, DiagnosisC),
+                                                                TestTrainingModelRow(Symptom1, Symptom3, DiagnosisD),
+                                                                TestTrainingModelRow(Symptom1, Symptom5, DiagnosisE)
 )

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 
 data class TestTrainingModelRow<T>(val diagnosisSymptom1: Symptom,
                                    val diagnosisSymptom2: Symptom,
-                                   val diagnosis: Diagnosis) : TrainingModeledRow<T> {
+                                   var diagnosis: Diagnosis? = null) : TrainingModeledRow<T> {
 
 
     override fun classification(): T {
@@ -70,9 +70,10 @@ class TrainingModelTest {
 
 
         val d: DecisionTreeClassifier<Diagnosis> = DecisionTreeClassifier(trainingModel = trainingModel,
-                predicateFunctions = p)
+                                                                          predicateFunctions = p)
+        d.sortedPredicates.forEach { println("${it.predicateFunction.label}, ${it.avgImpurity}, ${it.informationGain}") }
 
-        val i : Iterator<Predicate<Diagnosis>> = d.sortedPredicates.iterator()
+        val i: Iterator<Predicate<Diagnosis>> = d.sortedPredicates.iterator()
         assertEquals(QuestionLabels.Q1, i.next().predicateFunction.label)
         assertEquals(QuestionLabels.Q2, i.next().predicateFunction.label)
         assertEquals(QuestionLabels.Q4, i.next().predicateFunction.label)
@@ -80,5 +81,17 @@ class TrainingModelTest {
         assertEquals(QuestionLabels.Q5, i.next().predicateFunction.label)
 
         println(d.rootGiniImpurity)
+
+        println(d.evaluate(trainingModel.first()))
+        println(d.evaluate(trainingModel[2]))
+
+        println("----")
+        val t: List<TestTrainingModelRow<Diagnosis>> = listOf(TestTrainingModelRow(Symptom1, Symptom2),
+                                                              TestTrainingModelRow(Symptom1, Symptom3),
+                                                              TestTrainingModelRow(Symptom4, Symptom5),
+                                                              TestTrainingModelRow(Symptom1, Symptom3),
+                                                              TestTrainingModelRow(Symptom1, Symptom5)
+        )
+        println(d.evaluate(listOf(t.first(), t[2])))
     }
 }
