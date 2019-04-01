@@ -71,6 +71,8 @@ class DecisionTreeClassifier<T>(
             val avgImpurity: Double = (result.left.size.toDouble() / rows.size) * leftGiniImpurity
                     .plus(result.right.size.toDouble() / rows.size) * rightGiniImpurity
             val informationGain: Double = this.rootGiniImpurity - avgImpurity
+            //TODO: Remove any predicates that produce the same information gain as the root predicate.
+            //TODO: Remove predicates that have an information gain of 0
             predicateInformationGain.add(Predicate(predicateFunction, avgImpurity, informationGain))
         }
         return predicateInformationGain.toList()
