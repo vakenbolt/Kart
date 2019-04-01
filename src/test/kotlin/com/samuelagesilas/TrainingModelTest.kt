@@ -1,9 +1,7 @@
-import Diagnosis.*
-import Symptom.*
-import io.samuelagesilas.DecisionTreeClassifier
-import io.samuelagesilas.DecisionTreeClassifierDataRow
-import io.samuelagesilas.Predicate
-import io.samuelagesilas.PredicateFunction
+package com.samuelagesilas
+
+import com.samuelagesilas.Diagnosis.*
+import com.samuelagesilas.Symptom.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.math.pow
@@ -48,26 +46,26 @@ class TrainingModelTest {
         }
 
         val q1: PredicateFunction<DataRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q1) {
-            it.diagnosisSymptom1 == Symptom.Symptom1 || it.diagnosisSymptom2 == Symptom.Symptom1
+            it.diagnosisSymptom1 == Symptom1 || it.diagnosisSymptom2 == Symptom1
         }
         val q2: PredicateFunction<DataRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q2) {
-            it.diagnosisSymptom1 == Symptom.Symptom2 || it.diagnosisSymptom2 == Symptom.Symptom2
+            it.diagnosisSymptom1 == Symptom2 || it.diagnosisSymptom2 == Symptom2
         }
         val q3: PredicateFunction<DataRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q3) {
-            it.diagnosisSymptom1 == Symptom.Symptom3 || it.diagnosisSymptom2 == Symptom.Symptom3
+            it.diagnosisSymptom1 == Symptom3 || it.diagnosisSymptom2 == Symptom3
         }
         val q4: PredicateFunction<DataRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q4) {
-            it.diagnosisSymptom1 == Symptom.Symptom4 || it.diagnosisSymptom2 == Symptom.Symptom4
+            it.diagnosisSymptom1 == Symptom4 || it.diagnosisSymptom2 == Symptom4
         }
         val q5: PredicateFunction<DataRow<Diagnosis>> = PredicateFunction(label = QuestionLabels.Q5) {
-            it.diagnosisSymptom1 == Symptom.Symptom5 || it.diagnosisSymptom2 == Symptom.Symptom5
+            it.diagnosisSymptom1 == Symptom5 || it.diagnosisSymptom2 == Symptom5
         }
 
-        //FunctionalPredicates<DataRow<Diagnosis>>
+        //FunctionalPredicates<com.samuelagesilas.DataRow<com.samuelagesilas.Diagnosis>>
         val p: List<PredicateFunction<DataRow<Diagnosis>>> = listOf(q1, q2, q3, q4, q5)
-//        assertTrue(p[0].function.invoke(trainingModel[0] as DataRow<Diagnosis>))
-//        Assertions.assertTrue(p.get(0).function.invoke(trainingModel[1] as DataRow<Diagnosis>))
-//        assertFalse(p.get(1).function.invoke(trainingModel[4] as DataRow<Diagnosis>))
+//        assertTrue(p[0].function.invoke(com.samuelagesilas.getTrainingModel[0] as com.samuelagesilas.DataRow<com.samuelagesilas.Diagnosis>))
+//        Assertions.assertTrue(p.get(0).function.invoke(com.samuelagesilas.getTrainingModel[1] as com.samuelagesilas.DataRow<com.samuelagesilas.Diagnosis>))
+//        assertFalse(p.get(1).function.invoke(com.samuelagesilas.getTrainingModel[4] as com.samuelagesilas.DataRow<com.samuelagesilas.Diagnosis>))
 //
 
         val d: DecisionTreeClassifier<Diagnosis> = DecisionTreeClassifier(trainingModel = trainingModel,

@@ -1,4 +1,4 @@
-package io.samuelagesilas
+package com.samuelagesilas
 
 import java.util.*
 import kotlin.math.pow
@@ -42,8 +42,8 @@ class DecisionTreeClassifier<T>(
         return 1 - probabilities.sum()
     }
 
-    private fun evaluatePredicate(p: PredicateFunction<DecisionTreeClassifierDataRow<T>>,
-                                  trainingModel: List<DecisionTreeClassifierDataRow<T>>): PredicateResult<T> {
+    internal fun evaluatePredicate(p: PredicateFunction<DecisionTreeClassifierDataRow<T>>,
+                                   trainingModel: List<DecisionTreeClassifierDataRow<T>>): PredicateResult<T> {
         val resolvedAsTrue: MutableList<DecisionTreeClassifierDataRow<T>> = mutableListOf()
         val resolvedAsFalse: MutableList<DecisionTreeClassifierDataRow<T>> = mutableListOf()
         trainingModel.iterator().forEach { row: DecisionTreeClassifierDataRow<T> ->
@@ -71,35 +71,6 @@ class DecisionTreeClassifier<T>(
             predicateInformationGain.add(Predicate(predicateFunction, avgImpurity, informationGain))
         }
         return predicateInformationGain.toList()
-    }
-
-    private fun processNode(rootNode: PredicateNode<T>,
-                            childNodes: LinkedList<PredicateNode<T>>) {
-        if (rootNode.nodeResult!!.size == 1) return
-        rootNode.result = this.evaluatePredicate(rootNode.predicate.predicateFunction,
-                                                 rootNode.nodeResult!!)
-        val result: PredicateResult<T> = rootNode.result!!
-        val predicateIndex: Int = rootNode.predicateIndex!!
-        if (result.left.isNotEmpty() && predicateIndex < this.sortedPredicates.lastIndex) {
-            val index: Int = predicateIndex + 1
-            rootNode.leftNode = PredicateNode(this.sortedPredicates[index], index, result.left)
-            childNodes.push(rootNode.leftNode)
-        }
-        if (result.right.isNotEmpty() && predicateIndex < this.sortedPredicates.lastIndex) {
-            val index: Int = predicateIndex + 1
-            rootNode.rightNode = PredicateNode(this.sortedPredicates[index], index, result.right)
-            childNodes.push(rootNode.rightNode)
-        }
-    }
-
-    private fun buildDecisionTree(): PredicateNode<T> {
-        val childNodes: LinkedList<PredicateNode<T>> = LinkedList()
-        val rootNode = PredicateNode(this.sortedPredicates.first(), 0, trainingModel)
-        processNode(rootNode, childNodes)
-        while (childNodes.size > 0) {
-            processNode(childNodes.poll(), childNodes)
-        }
-        return rootNode
     }
 
     private fun classify(node: PredicateNode<T>,
@@ -133,7 +104,8 @@ class DecisionTreeClassifier<T>(
 
 
     init {
-        this.decisionTree = buildDecisionTree()
+        val f = DecisionTreeNodeBuilder<T>(decisionTreeClassifier = this, trainingModel = this.trainingModel)
+        this.decisionTree = f.buildDecisionTree()
     }
 
     fun evaluate(row: DecisionTreeClassifierDataRow<T>): T = evaluateWithTree(row, decisionTree)
@@ -142,5 +114,43 @@ class DecisionTreeClassifier<T>(
         val l = mutableListOf<T>()
         rows.forEach { row -> l.add(evaluateWithTree(row, decisionTree)) }
         return l.toList()
+    }
+}
+
+
+class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTreeClassifier<T>,
+                                 private val trainingModel: List<DecisionTreeClassifierDataRow<T>>) {
+
+    private val sortedPredicates: List<Predicate<T>> = decisionTreeClassifier.sortedPredicates
+
+    private fun processNode(rootNode: PredicateNode<T>,
+                            childNodes: LinkedList<PredicateNode<T>>,
+                            evaluatePredicate: (p: PredicateFunction<DecisionTreeClassifierDataRow<T>>,
+                                                trainingModel: List<DecisionTreeClassifierDataRow<T>>) -> PredicateResult<T>) {
+        if (rootNode.nodeResult!!.size == 1) return
+        rootNode.result = evaluatePredicate.invoke(rootNode.predicate.predicateFunction,
+                                                   rootNode.nodeResult!!)
+        val result: PredicateResult<T> = rootNode.result!!
+        val predicateIndex: Int = rootNode.predicateIndex!!
+        if (result.left.isNotEmpty() && predicateIndex < this.sortedPredicates.lastIndex) {
+            val index: Int = predicateIndex + 1
+            rootNode.leftNode = PredicateNode(this.sortedPredicates[index], index, result.left)
+            childNodes.push(rootNode.leftNode)
+        }
+        if (result.right.isNotEmpty() && predicateIndex < this.sortedPredicates.lastIndex) {
+            val index: Int = predicateIndex + 1
+            rootNode.rightNode = PredicateNode(this.sortedPredicates[index], index, result.right)
+            childNodes.push(rootNode.rightNode)
+        }
+    }
+
+    internal fun buildDecisionTree(): PredicateNode<T> {1
+        val childNodes: LinkedList<PredicateNode<T>> = LinkedList()
+        val rootNode = PredicateNode(this.sortedPredicates.first(), 0, trainingModel)
+        processNode(rootNode, childNodes, decisionTreeClassifier::evaluatePredicate)
+        while (childNodes.size > 0) {
+            processNode(childNodes.poll(), childNodes, decisionTreeClassifier::evaluatePredicate)
+        }
+        return rootNode
     }
 }

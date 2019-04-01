@@ -1,14 +1,15 @@
-import Diagnosis.*
-import Symptom.*
-import io.samuelagesilas.DecisionTreeClassifierDataRow
+package com.samuelagesilas
+
+import com.samuelagesilas.Diagnosis.*
+import com.samuelagesilas.Symptom.*
 
 /*
-DiagQuestion A   DiagQuestion B    Diagnosis
-Sympton 1        Sympton 2         Diagnosis A
-Sympton 1        Sympton 3         Diagnosis B
-Sympton 4        Sympton 5         Diagnosis C
-Sympton 1        Sympton 3         Diagnosis D
-Sympton 1        Sympton 5         Diagnosis E
+DiagQuestion A   DiagQuestion B    com.samuelagesilas.Diagnosis
+Sympton 1        Sympton 2         com.samuelagesilas.Diagnosis A
+Sympton 1        Sympton 3         com.samuelagesilas.Diagnosis B
+Sympton 4        Sympton 5         com.samuelagesilas.Diagnosis C
+Sympton 1        Sympton 3         com.samuelagesilas.Diagnosis D
+Sympton 1        Sympton 5         com.samuelagesilas.Diagnosis E
 */
 enum class Symptom {
     Symptom1,

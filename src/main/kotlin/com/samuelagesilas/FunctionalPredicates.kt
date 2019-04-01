@@ -1,11 +1,11 @@
-package io.samuelagesilas
+package com.samuelagesilas
 
 /**
  * A predicate lambda identified as [function] and its associated [label].
  * [T] indicates the type associated with the classification column in the training model.
  */
 data class PredicateFunction<T : DecisionTreeClassifierDataRow<*>>(val label: String,
-                                                                   val function: (row: T) -> Boolean)
+                                                                                      val function: (row: T) -> Boolean)
 
 
 /**

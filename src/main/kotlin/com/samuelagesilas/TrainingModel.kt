@@ -1,4 +1,4 @@
-package io.samuelagesilas
+package com.samuelagesilas
 
 /**
  * Interface for any data type used as a row in a training model.
