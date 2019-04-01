@@ -1,6 +1,6 @@
 import Diagnosis.*
 import Symptom.*
-import io.samuelagesilas.TrainingModeledRow
+import io.samuelagesilas.DecisionTreeClassifierDataRow
 
 /*
 DiagQuestion A	DiagQuestion B	Diagnosis
@@ -34,9 +34,9 @@ object QuestionLabels {
     const val Q5 = "Question 5"
 }
 
-val trainingModel: List<TrainingModeledRow<Diagnosis>> = listOf(TestTrainingModelRow(Symptom1, Symptom2, DiagnosisA),
-                                                                TestTrainingModelRow(Symptom1, Symptom3, DiagnosisB),
-                                                                TestTrainingModelRow(Symptom4, Symptom5, DiagnosisC),
-                                                                TestTrainingModelRow(Symptom1, Symptom3, DiagnosisD),
-                                                                TestTrainingModelRow(Symptom1, Symptom5, DiagnosisE)
+val trainingModel: List<DecisionTreeClassifierDataRow<Diagnosis>> = listOf(DataRow(Symptom1, Symptom2, DiagnosisA),
+                                                                           DataRow(Symptom1, Symptom3, DiagnosisB),
+                                                                           DataRow(Symptom4, Symptom5, DiagnosisC),
+                                                                           DataRow(Symptom1, Symptom3, DiagnosisD),
+                                                                           DataRow(Symptom1, Symptom5, DiagnosisE)
 )

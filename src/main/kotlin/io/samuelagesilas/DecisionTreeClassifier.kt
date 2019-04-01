@@ -6,12 +6,12 @@ import kotlin.math.pow
 /**
  * Main class for the [DecisionTreeClassifier] where [T] indicates the type associated with the classification column
  * in the training model.
- * @param trainingModel: The [List] of[TrainingModeledRow]'s making up the training model used to build the decision
+ * @param trainingModel: The [List] of[DecisionTreeClassifierDataRow]'s making up the training model used to build the decision
  * tree.
  * @param predicateFunctions: The [List] of [PredicateFunction]'s used to query the training model.
  */
 class DecisionTreeClassifier<T>(
-        private val trainingModel: List<TrainingModeledRow<T>>,
+        private val trainingModel: List<DecisionTreeClassifierDataRow<T>>,
         private val predicateFunctions: List<PredicateFunction<*>>) {
 
     /**
@@ -27,11 +27,11 @@ class DecisionTreeClassifier<T>(
 
     private var decisionTree: PredicateNode<T>
 
-    private fun calculateGiniImpurity(trainingModelRows: List<TrainingModeledRow<T>>): Double {
+    private fun calculateGiniImpurity(trainingModelRows: List<DecisionTreeClassifierDataRow<T>>): Double {
         val classificationCounts: MutableMap<T, Int> = mutableMapOf()
-        val distinctClasses: List<TrainingModeledRow<T>> = trainingModelRows.distinctBy { it.classification() }
-        distinctClasses.forEach { trainingModelRow: TrainingModeledRow<T> ->
-            classificationCounts[trainingModelRow.classification()] = trainingModelRows.count { m: TrainingModeledRow<T> ->
+        val distinctClasses: List<DecisionTreeClassifierDataRow<T>> = trainingModelRows.distinctBy { it.classification() }
+        distinctClasses.forEach { trainingModelRow: DecisionTreeClassifierDataRow<T> ->
+            classificationCounts[trainingModelRow.classification()!!] = trainingModelRows.count { m: DecisionTreeClassifierDataRow<T> ->
                 m.classification()!!.toString() == trainingModelRow.classification().toString()
             }
         }
@@ -42,11 +42,11 @@ class DecisionTreeClassifier<T>(
         return 1 - probabilities.sum()
     }
 
-    private fun evaluatePredicate(p: PredicateFunction<TrainingModeledRow<T>>,
-                                  trainingModel: List<TrainingModeledRow<T>>): PredicateResult<T> {
-        val resolvedAsTrue: MutableList<TrainingModeledRow<T>> = mutableListOf()
-        val resolvedAsFalse: MutableList<TrainingModeledRow<T>> = mutableListOf()
-        trainingModel.iterator().forEach { row: TrainingModeledRow<T> ->
+    private fun evaluatePredicate(p: PredicateFunction<DecisionTreeClassifierDataRow<T>>,
+                                  trainingModel: List<DecisionTreeClassifierDataRow<T>>): PredicateResult<T> {
+        val resolvedAsTrue: MutableList<DecisionTreeClassifierDataRow<T>> = mutableListOf()
+        val resolvedAsFalse: MutableList<DecisionTreeClassifierDataRow<T>> = mutableListOf()
+        trainingModel.iterator().forEach { row: DecisionTreeClassifierDataRow<T> ->
             when (p.function.invoke(row)) {
                 true -> resolvedAsTrue.add(row)
                 false -> resolvedAsFalse.add(row)
@@ -55,11 +55,11 @@ class DecisionTreeClassifier<T>(
         return PredicateResult(left = resolvedAsTrue.toList(), right = resolvedAsFalse.toList())
     }
 
-    private fun calculateInformationGain(rows: List<TrainingModeledRow<T>>): List<Predicate<T>> {
+    private fun calculateInformationGain(rows: List<DecisionTreeClassifierDataRow<T>>): List<Predicate<T>> {
         val predicateInformationGain: MutableList<Predicate<T>> = mutableListOf()
         @Suppress("UNCHECKED_CAST")
-        val p = predicateFunctions as List<PredicateFunction<TrainingModeledRow<T>>>
-        p.iterator().forEach { predicateFunction: PredicateFunction<TrainingModeledRow<T>> ->
+        val p = predicateFunctions as List<PredicateFunction<DecisionTreeClassifierDataRow<T>>>
+        p.iterator().forEach { predicateFunction: PredicateFunction<DecisionTreeClassifierDataRow<T>> ->
             val result: PredicateResult<T> = evaluatePredicate(predicateFunction, this.trainingModel)
             val leftGiniImpurity: Double = this.calculateGiniImpurity(trainingModelRows = result.left)
             val rightGiniImpurity: Double = this.calculateGiniImpurity(trainingModelRows = result.right)
@@ -103,28 +103,28 @@ class DecisionTreeClassifier<T>(
     }
 
     private fun classify(node: PredicateNode<T>,
-                         classifications: List<TrainingModeledRow<T>>): TrainingModeledRow<T> = when {
+                         classifications: List<DecisionTreeClassifierDataRow<T>>): DecisionTreeClassifierDataRow<T> = when {
         (classifications.size == 1) -> classifications.first()
         (classifications.size > 1) -> classifications[(0..(classifications.size - 1)).random()]
         else -> classifications[(0..(node.nodeResult!!.size - 1)).random()]
     }
 
-    private tailrec fun evaluateWithTree(row: TrainingModeledRow<T>,
+    private tailrec fun evaluateWithTree(row: DecisionTreeClassifierDataRow<T>,
                                          node: PredicateNode<T>): T {
         with(node.nodeResult!!) {
             if (this.size == 1 || this.isEmpty()) {
-                return classify(node, classifications = this).classification()
+                return classify(node, classifications = this).classification()!!
             }
         }
         val result: Boolean = node.predicate.predicateFunction.function.invoke(row)
         val nextNode: PredicateNode<T> = if (result) {
             if (node.leftNode == null) {
-                return classify(node, classifications = node.nodeResult!!).classification()
+                return classify(node, classifications = node.nodeResult!!).classification()!!
             }
             node.leftNode!!
         } else {
             if (node.rightNode == null) {
-                return classify(node, classifications = node.nodeResult!!).classification()
+                return classify(node, classifications = node.nodeResult!!).classification()!!
             }
             node.rightNode!!
         }
@@ -136,13 +136,11 @@ class DecisionTreeClassifier<T>(
         this.decisionTree = buildDecisionTree()
     }
 
-    fun evaluate(row: TrainingModeledRow<T>): T = evaluateWithTree(row, decisionTree)
+    fun evaluate(row: DecisionTreeClassifierDataRow<T>): T = evaluateWithTree(row, decisionTree)
 
-    fun evaluate(rows: List<TrainingModeledRow<T>>): List<T> {
+    fun evaluate(rows: List<DecisionTreeClassifierDataRow<T>>): List<T> {
         val l = mutableListOf<T>()
-        rows.forEach { row ->
-            l.add(evaluateWithTree(row, decisionTree))
-        }
+        rows.forEach { row -> l.add(evaluateWithTree(row, decisionTree)) }
         return l.toList()
     }
 }
