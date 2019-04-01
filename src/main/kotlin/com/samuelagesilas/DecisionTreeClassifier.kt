@@ -11,7 +11,7 @@ import kotlin.math.pow
  * @param predicateFunctions: The [List] of [PredicateFunction]'s used to query the training model.
  */
 class DecisionTreeClassifier<T>(
-        private val trainingModel: List<DecisionTreeClassifierDataRow<T>>,
+        internal val trainingModel: List<DecisionTreeClassifierDataRow<T>>,
         private val predicateFunctions: List<PredicateFunction<*>>) {
 
     /**
@@ -104,7 +104,7 @@ class DecisionTreeClassifier<T>(
 
 
     init {
-        val f = DecisionTreeNodeBuilder<T>(decisionTreeClassifier = this, trainingModel = this.trainingModel)
+        val f = DecisionTreeNodeBuilder<T>(decisionTreeClassifier = this)
         this.decisionTree = f.buildDecisionTree()
     }
 
@@ -118,8 +118,7 @@ class DecisionTreeClassifier<T>(
 }
 
 
-class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTreeClassifier<T>,
-                                 private val trainingModel: List<DecisionTreeClassifierDataRow<T>>) {
+class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTreeClassifier<T>) {
 
     private val sortedPredicates: List<Predicate<T>> = decisionTreeClassifier.sortedPredicates
 
@@ -144,9 +143,11 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
         }
     }
 
-    internal fun buildDecisionTree(): PredicateNode<T> {1
+    internal fun buildDecisionTree(): PredicateNode<T> {
         val childNodes: LinkedList<PredicateNode<T>> = LinkedList()
-        val rootNode = PredicateNode(this.sortedPredicates.first(), 0, trainingModel)
+        val rootNode: PredicateNode<T> = PredicateNode(predicate = this.sortedPredicates.first(),
+                                                       predicateIndex = 0,
+                                                       nodeResult = this.decisionTreeClassifier.trainingModel)
         processNode(rootNode, childNodes, decisionTreeClassifier::evaluatePredicate)
         while (childNodes.size > 0) {
             processNode(childNodes.poll(), childNodes, decisionTreeClassifier::evaluatePredicate)

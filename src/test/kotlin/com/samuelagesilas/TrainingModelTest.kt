@@ -3,6 +3,7 @@ package com.samuelagesilas
 import com.samuelagesilas.Diagnosis.*
 import com.samuelagesilas.Symptom.*
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import kotlin.math.pow
 
@@ -61,42 +62,41 @@ class TrainingModelTest {
             it.diagnosisSymptom1 == Symptom5 || it.diagnosisSymptom2 == Symptom5
         }
 
-        //FunctionalPredicates<com.samuelagesilas.DataRow<com.samuelagesilas.Diagnosis>>
         val p: List<PredicateFunction<DataRow<Diagnosis>>> = listOf(q1, q2, q3, q4, q5)
-//        assertTrue(p[0].function.invoke(com.samuelagesilas.getTrainingModel[0] as com.samuelagesilas.DataRow<com.samuelagesilas.Diagnosis>))
-//        Assertions.assertTrue(p.get(0).function.invoke(com.samuelagesilas.getTrainingModel[1] as com.samuelagesilas.DataRow<com.samuelagesilas.Diagnosis>))
-//        assertFalse(p.get(1).function.invoke(com.samuelagesilas.getTrainingModel[4] as com.samuelagesilas.DataRow<com.samuelagesilas.Diagnosis>))
-//
+        val classifier: DecisionTreeClassifier<Diagnosis> = DecisionTreeClassifier(trainingModel = trainingModel,
+                                                                                   predicateFunctions = p)
+        classifier.sortedPredicates.forEach { println("${it.predicateFunction.label}, ${it.avgImpurity}, ${it.informationGain}") }
 
-        val d: DecisionTreeClassifier<Diagnosis> = DecisionTreeClassifier(trainingModel = trainingModel,
-                                                                          predicateFunctions = p)
-        d.sortedPredicates.forEach { println("${it.predicateFunction.label}, ${it.avgImpurity}, ${it.informationGain}") }
-
-        val i: Iterator<Predicate<Diagnosis>> = d.sortedPredicates.iterator()
+        val i: Iterator<Predicate<Diagnosis>> = classifier.sortedPredicates.iterator()
         assertEquals(QuestionLabels.Q1, i.next().predicateFunction.label)
         assertEquals(QuestionLabels.Q2, i.next().predicateFunction.label)
         assertEquals(QuestionLabels.Q4, i.next().predicateFunction.label)
         assertEquals(QuestionLabels.Q3, i.next().predicateFunction.label)
         assertEquals(QuestionLabels.Q5, i.next().predicateFunction.label)
 
-        println(d.rootGiniImpurity)
+        assertEquals(classifier.evaluate(trainingModel.first()), DiagnosisA)
+        assertEquals(classifier.evaluate(trainingModel[2]), DiagnosisC)
 
-        println(d.evaluate(trainingModel.first()))
-        println(d.evaluate(trainingModel[2]))
-
-        println("----")
         val t: List<DataRow<Diagnosis>> = listOf(DataRow(Symptom1, Symptom2),
                                                  DataRow(Symptom1, Symptom3),
-                                                 DataRow(Symptom4, Symptom5),
-                                                 DataRow(Symptom1, Symptom3),
-                                                 DataRow(Symptom1, Symptom5)
+                                                 DataRow(Symptom2, Symptom5),
+                                                 DataRow(Symptom3, Symptom1),
+                                                 DataRow(Symptom2, Symptom5)
         )
-        println(d.evaluate(listOf(t.first(), t[2])))
-        val n = 1 - listOf((1.toDouble() / 5).pow(2),
-                           (1.toDouble() / 5).pow(2),
-                           (1.toDouble() / 5).pow(2),
-                           (1.toDouble() / 5).pow(2),
-                           (1.toDouble() / 5).pow(2)).sum()
-        assertEquals(d.rootGiniImpurity, n)
+        with(classifier.evaluate(listOf(t.first(), t[2]))) {
+            assertEquals(this[0], DiagnosisA)
+            assertEquals(this[1], DiagnosisC)
+        }
+        assertEquals(DiagnosisC, classifier.evaluate(t[2]))
+        with(classifier.evaluate(t[3])) {
+            assertTrue(this == DiagnosisB || this == DiagnosisD)
+        }
+        assertEquals(DiagnosisC, classifier.evaluate(t[4]))
+        val n: Double = 1 - listOf((1.toDouble() / 5).pow(2),
+                                   (1.toDouble() / 5).pow(2),
+                                   (1.toDouble() / 5).pow(2),
+                                   (1.toDouble() / 5).pow(2),
+                                   (1.toDouble() / 5).pow(2)).sum()
+        assertEquals(classifier.rootGiniImpurity, n)
     }
 }
