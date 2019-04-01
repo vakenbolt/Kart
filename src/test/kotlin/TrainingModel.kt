@@ -3,12 +3,12 @@ import Symptom.*
 import io.samuelagesilas.DecisionTreeClassifierDataRow
 
 /*
-DiagQuestion A	DiagQuestion B	Diagnosis
-Sympton 1	    Sympton 2	    Diagnosis A
-Sympton 1	    Sympton 3	    Diagnosis B
-Sympton 4	    Sympton 5	    Diagnosis C
-Sympton 1	    Sympton 3	    Diagnosis D
-Sympton 1	    Sympton 5	    Diagnosis E
+DiagQuestion A   DiagQuestion B    Diagnosis
+Sympton 1        Sympton 2         Diagnosis A
+Sympton 1        Sympton 3         Diagnosis B
+Sympton 4        Sympton 5         Diagnosis C
+Sympton 1        Sympton 3         Diagnosis D
+Sympton 1        Sympton 5         Diagnosis E
 */
 enum class Symptom {
     Symptom1,
