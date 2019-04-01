@@ -1,4 +1,4 @@
-<img src="https://svgsilh.com/png-512/1296971.png" alt="alt text" width="100" height="100">
+<img src="https://svgsilh.com/png-512/1296971.png" alt="alt text" height="150">
 
 ## Kart: Decision Tree Classifier for Kotlin
 
@@ -81,8 +81,10 @@ val data: List<DataRow<Diagnosis>> = listOf(
 To evaluate and retrieve the classification for a _row_ of data.
 ```kotlin
 classifier.evaluate(data.first())
+```
 
 Returns:
+```kotlin
 DiagnosisA
 ```
 
@@ -90,7 +92,9 @@ DiagnosisA
 In this example, the response from the classifier will either `DiagnosisB` or `DiagnosisD` because the provided questions associated with the given training data could not be partitioned further.
 ```kotlin
 classifier.evaluate(data[3])
+```
 
 Returns:
+```kotlin
 DiagnosisB or DiagnosisD
 ```
