@@ -37,10 +37,15 @@ data class DataRow<T>(
 The training data is created as a `List` of objects that implement the `DecisionTreeClassifierDataRow<T>` interface where `<T>` indicates the type associated with the classification column in the training model.
 ```kotlin
 List<DecisionTreeClassifierDataRow<Diagnosis>> = listOf(DataRow(Symptom1, Symptom2, DiagnosisA),
-                                                        DataRow(Symptom1, Symptom3, DiagnosisB),
-                                                        DataRow(Symptom4, Symptom5, DiagnosisC),
+                                                        DataRow(Symptom1, Symptom1, DiagnosisB),
+                                                        DataRow(Symptom1, Symptom5, DiagnosisC),
                                                         DataRow(Symptom1, Symptom3, DiagnosisD),
-                                                        DataRow(Symptom1, Symptom5, DiagnosisE)
+                                                        DataRow(Symptom5, Symptom3, DiagnosisE),
+                                                        DataRow(Symptom1, Symptom4, DiagnosisB),
+                                                        DataRow(Symptom1, Symptom1, DiagnosisC),
+                                                        DataRow(Symptom2, Symptom3, DiagnosisC))
+                                                        
+                                                        
 ```
 
 The predicate's or _questions_ used to analyze the training data is done with the `PredicateFunction` class which takes a label and lambda as the predicate function.
@@ -73,14 +78,8 @@ val classifier: DecisionTreeClassifier<Diagnosis> = DecisionTreeClassifier(
 Here is a sample list of data provided to the classifier for analysis.
 ```kotlin
 val data: List<DataRow<Diagnosis>> = listOf(
-    DataRow(Symptom1, Symptom2, DiagnosisA),
-    DataRow(Symptom1, Symptom1, DiagnosisB),
-    DataRow(Symptom1, Symptom5, DiagnosisC),
-    DataRow(Symptom1, Symptom3, DiagnosisD),
-    DataRow(Symptom5, Symptom3, DiagnosisE),
-    DataRow(Symptom1, Symptom4, DiagnosisB),
-    DataRow(Symptom1, Symptom1, DiagnosisC),
-    DataRow(Symptom2, Symptom3, DiagnosisC))
+    DataRow(Symptom1, Symptom2),
+    DataRow(Symptom1, Symptom1))
 ```
 
 To evaluate and retrieve the classification for a _row_ of data.
