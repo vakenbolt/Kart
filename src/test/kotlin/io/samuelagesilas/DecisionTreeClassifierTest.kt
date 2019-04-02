@@ -11,7 +11,7 @@ class DecisionTreeClassifierTest {
                                                     DataRow(Symptom.Symptom1, Symptom.Symptom3),
                                                     DataRow(Symptom.Symptom2, Symptom.Symptom5),
                                                     DataRow(Symptom.Symptom3, Symptom.Symptom1),
-                                                    DataRow(Symptom.Symptom2, Symptom.Symptom5))
+                                                    DataRow(Symptom.Symptom2, Symptom.Symptom4))
         for (i in 1..100) {
             with(classifier.evaluate(listOf(data.first(), data[2]))) {
                 assertTrue(this[0] == Diagnosis.DiagnosisA
@@ -21,7 +21,7 @@ class DecisionTreeClassifierTest {
             }
             assertEquals(Diagnosis.DiagnosisC, classifier.evaluate(data[2]))
             assertEquals(Diagnosis.DiagnosisC, classifier.evaluate(data[3]))
-            assertEquals(Diagnosis.DiagnosisC, classifier.evaluate(data[4]))
+            assertEquals(Diagnosis.DiagnosisB, classifier.evaluate(data[4]))
         }
     }
 }

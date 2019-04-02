@@ -23,6 +23,14 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
      */
     val sortedPredicates: List<Predicate<T>> = this.calculateInformationGain(rows = trainingData)
         .sortedByDescending { it.informationGain }
+        .let { p: List<Predicate<T>> ->
+            val filteredList: MutableList<Predicate<T>> = mutableListOf()
+            filteredList.add(p[0])
+            for (i in 1..p.indexOfFirst { i: Predicate<T> -> i.informationGain == 0.0 }) {
+                if (p[i] != p[0]) filteredList.add(p[i])
+            }
+            filteredList
+        }
 
     private var decisionTree: PredicateNode<T>
 
@@ -74,8 +82,6 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
             val avgImpurity: Double = (result.left.size.toDouble() / rows.size) * leftGiniImpurity +
                     (result.right.size.toDouble() / rows.size) * rightGiniImpurity
             val informationGain: Double = this.rootGiniImpurity - avgImpurity
-            //TODO: Remove any predicates that produce the same information gain as the root predicate.
-            //TODO: Remove predicates that have an information gain of 0
             predicateInformationGain.add(Predicate(predicateFunction, avgImpurity, informationGain))
         }
         return predicateInformationGain.toList()
