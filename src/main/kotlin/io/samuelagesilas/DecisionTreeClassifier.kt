@@ -103,10 +103,14 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
         }
         val result: Boolean = node.predicate.predicateFunction.function.invoke(row)
         val nextNode: PredicateNode<T> = if (result) {
-            if (node.leftNode == null) return classify(node, classifications = node.nodeResult!!).classification()!!
+            if (node.leftNode == null) {
+                return classify(node, classifications = node.nodeResult!!).classification()!!
+            }
             node.leftNode!!
         } else {
-            if (node.rightNode == null) return classify(node, classifications = node.nodeResult!!).classification()!!
+            if (node.rightNode == null) {
+                return classify(node, classifications = node.nodeResult!!).classification()!!
+            }
             node.rightNode!!
         }
         return evaluateWithTree(row, nextNode)
