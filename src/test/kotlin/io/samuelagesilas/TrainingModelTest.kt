@@ -38,7 +38,6 @@ class TrainingModelTest {
             assertEquals(this.Q3, i.next().predicateFunction.label)
             assertEquals(this.Q1, i.next().predicateFunction.label)
             assertEquals(this.Q5, i.next().predicateFunction.label)
-            assertEquals(this.Q2, i.next().predicateFunction.label)
         }
     }
 
@@ -107,7 +106,7 @@ class TrainingModelTest {
             with(classifier.evaluate(trainingModel.first())) {
                 assertTrue(this == DiagnosisA || this == DiagnosisB || this == DiagnosisC)
             }
-            assertEquals(classifier.evaluate(trainingModel[2]), DiagnosisC)
+            assertEquals(DiagnosisC, classifier.evaluate(trainingModel[2]))
             assertEquals(classifier.evaluate(trainingModel[3]), DiagnosisD)
             assertEquals(classifier.evaluate(trainingModel[4]), DiagnosisE)
             assertEquals(classifier.evaluate(trainingModel[5]), DiagnosisB)
