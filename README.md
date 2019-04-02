@@ -1,3 +1,5 @@
+![](https://img.shields.io/badge/BETA-0.9-%23ff0000.svg)
+
 <img src="https://svgsilh.com/png-512/1296971.png" alt="alt text" height="150">
 
 ## Kart: Decision Tree Classifier for Kotlin
