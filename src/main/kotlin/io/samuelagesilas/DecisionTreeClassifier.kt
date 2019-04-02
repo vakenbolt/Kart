@@ -99,20 +99,14 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
     private tailrec fun evaluateWithTree(row: DecisionTreeClassifierDataRow<T>,
                                          node: PredicateNode<T>): T {
         with(node.nodeResult!!) {
-            if (this.size == 1 || this.isEmpty()) {
-                return classify(node, classifications = this).classification()!!
-            }
+            if (this.size == 1 || this.isEmpty()) return classify(node, classifications = this).classification()!!
         }
         val result: Boolean = node.predicate.predicateFunction.function.invoke(row)
         val nextNode: PredicateNode<T> = if (result) {
-            if (node.leftNode == null) {
-                return classify(node, classifications = node.nodeResult!!).classification()!!
-            }
+            if (node.leftNode == null) return classify(node, classifications = node.nodeResult!!).classification()!!
             node.leftNode!!
         } else {
-            if (node.rightNode == null) {
-                return classify(node, classifications = node.nodeResult!!).classification()!!
-            }
+            if (node.rightNode == null) return classify(node, classifications = node.nodeResult!!).classification()!!
             node.rightNode!!
         }
         return evaluateWithTree(row, nextNode)
