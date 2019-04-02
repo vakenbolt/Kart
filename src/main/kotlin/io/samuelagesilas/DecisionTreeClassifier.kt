@@ -28,10 +28,11 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
 
     private fun calculateGiniImpurity(trainingDataRows: List<DecisionTreeClassifierDataRow<T>>): Double {
         val classificationCounts: MutableMap<T, Int> = mutableMapOf()
-        val distinctClasses: List<DecisionTreeClassifierDataRow<T>> = trainingDataRows.distinctBy {
+        val distinctClassification: List<DecisionTreeClassifierDataRow<T>> = trainingDataRows.distinctBy {
             it.classification()
         }
-        distinctClasses.forEach { trainingDataRow: DecisionTreeClassifierDataRow<T> ->
+        //check for the number of times a classification appears in the trainingDataRows list.
+        distinctClassification.forEach { trainingDataRow: DecisionTreeClassifierDataRow<T> ->
             classificationCounts[trainingDataRow.classification()!!] =
                 trainingDataRows.count { m: DecisionTreeClassifierDataRow<T> ->
                     m.classification()!!.toString() == trainingDataRow.classification().toString()
