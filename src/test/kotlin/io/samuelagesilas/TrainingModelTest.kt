@@ -103,11 +103,19 @@ class TrainingModelTest {
     @Test
     fun `test training data predicates with classifier`() {
         classifier.sortedPredicates.forEach { println("${it.predicateFunction.label}, ${it.avgImpurity}, ${it.informationGain}") }
-        for (i in 0 until 100) {
+        for (i in 1..100) {
             with(classifier.evaluate(trainingModel.first())) {
                 assertTrue(this == DiagnosisA || this == DiagnosisB || this == DiagnosisC)
             }
+            assertEquals(classifier.evaluate(trainingModel[2]), DiagnosisC)
+            assertEquals(classifier.evaluate(trainingModel[3]), DiagnosisD)
+            assertEquals(classifier.evaluate(trainingModel[4]), DiagnosisE)
+            assertEquals(classifier.evaluate(trainingModel[5]), DiagnosisB)
+            with(classifier.evaluate(trainingModel[6])) {
+                assertTrue(this == DiagnosisA || this == DiagnosisB || this == DiagnosisC)
+            }
+            assertEquals(classifier.evaluate(trainingModel[7]), DiagnosisC)
         }
-        assertEquals(classifier.evaluate(trainingModel[2]), DiagnosisC)
+
     }
 }

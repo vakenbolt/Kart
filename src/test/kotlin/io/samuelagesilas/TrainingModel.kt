@@ -5,11 +5,14 @@ import io.samuelagesilas.Symptom.*
 
 /*
 DiagQuestion A   DiagQuestion B    Diagnosis
-Sympton 1        Sympton 2         Diagnosis A
-Sympton 1        Sympton 3         Diagnosis B
-Sympton 4        Sympton 5         Diagnosis C
-Sympton 1        Sympton 3         Diagnosis D
-Sympton 1        Sympton 5         Diagnosis E
+Symptom1         Symptom2          DiagnosisA
+Symptom1         Symptom1          DiagnosisB
+Symptom1         Symptom5          DiagnosisC
+Symptom1         Symptom3          DiagnosisD
+Symptom5         Symptom3          DiagnosisE
+Symptom1         Symptom4          DiagnosisB
+Symptom1         Symptom1          DiagnosisC
+Symptom2         Symptom3          DiagnosisC
 */
 enum class Symptom {
     Symptom1,
