@@ -25,8 +25,8 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
         .sortedByDescending { it.informationGain }
         .let { p: List<Predicate<T>> ->
             val filteredList: MutableList<Predicate<T>> = mutableListOf(p[0])
-            for (i in 1..p.indexOfFirst { i: Predicate<T> -> i.informationGain == 0.0 }) {
-                if (p[i] != p[0]) filteredList.add(p[i])
+            for (i in 1 until p.indexOfFirst { i: Predicate<T> -> i.informationGain == 0.0 }) {
+                if (p[i] != p[0] && p[i].informationGain != p[0].informationGain) filteredList.add(p[i])
             }
             filteredList
         }
@@ -99,17 +99,20 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
     private tailrec fun evaluateWithTree(row: DecisionTreeClassifierDataRow<T>,
                                          node: PredicateNode<T>): T {
         with(node.nodeResult!!) {
-            if (this.size == 1 || this.isEmpty()) return classify(node, classifications = this).classification()!!
+            if (this.size == 1
+                || this.isEmpty()
+                || node.predicateFunction == null
+            ) return classify(node, classifications = this).classification()!!
         }
-        val result: Boolean = node.predicate.predicateFunction.function.invoke(row)
+        val result: Boolean = node.predicateFunction!!.function.invoke(row)
         val nextNode: PredicateNode<T> = if (result) {
             if (node.leftNode == null) {
-                return classify(node, classifications = node.nodeResult!!).classification()!!
+                return classify(node, classifications = node.nodeResult).classification()!!
             }
             node.leftNode!!
         } else {
             if (node.rightNode == null) {
-                return classify(node, classifications = node.nodeResult!!).classification()!!
+                return classify(node, classifications = node.nodeResult).classification()!!
             }
             node.rightNode!!
         }
@@ -138,25 +141,24 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
 class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTreeClassifier<T>) {
     private val sortedPredicates: List<Predicate<T>> = decisionTreeClassifier.sortedPredicates
 
-    private fun processNode(rootNode: PredicateNode<T>,
-                            childNodes: LinkedList<PredicateNode<T>>,
-                            evaluatePredicate: (p: PredicateFunction<DecisionTreeClassifierDataRow<T>>,
-                                                trainingData: List<DecisionTreeClassifierDataRow<T>>) -> PredicateResult<T>) {
-        if (rootNode.nodeResult!!.size == 1) return
-        rootNode.result = evaluatePredicate.invoke(rootNode.predicate.predicateFunction,
-                                                   rootNode.nodeResult!!
-        )
+    private tailrec fun processNode(rootNode: PredicateNode<T>,
+                                    iterator: Iterator<Predicate<T>>,
+                                    childNodes: LinkedList<PredicateNode<T>>,
+                                    evaluatePredicate: (p: PredicateFunction<DecisionTreeClassifierDataRow<T>>,
+                                                        trainingData: List<DecisionTreeClassifierDataRow<T>>) -> PredicateResult<T>) {
+
+        if (!iterator.hasNext()) return
+        with(rootNode.nodeResult!!) { if (this.size == 1 || this.map { it.classification() }.distinct().size == 1) return }
+        val f: PredicateFunction<DecisionTreeClassifierDataRow<T>> = iterator.next().predicateFunction
+        rootNode.result = evaluatePredicate.invoke(f, rootNode.nodeResult)
+        rootNode.predicateFunction = f
+
         val result: PredicateResult<T> = rootNode.result!!
-        val predicateIndex: Int = rootNode.predicateIndex!!
-        if (result.left.isNotEmpty() && predicateIndex < this.sortedPredicates.lastIndex) {
-            val index: Int = predicateIndex + 1
-            rootNode.leftNode = PredicateNode(this.sortedPredicates[index], index, result.left)
-            childNodes.push(rootNode.leftNode)
-        }
-        if (result.right.isNotEmpty() && predicateIndex < this.sortedPredicates.lastIndex) {
-            val index: Int = predicateIndex + 1
-            rootNode.rightNode = PredicateNode(this.sortedPredicates[index], index, result.right)
+        if (result.left.isNotEmpty() || result.left.size == 1 || result.left.map { it.classification() }.distinct().size == 1) {
+            rootNode.leftNode = PredicateNode(result.left)
+            rootNode.rightNode = PredicateNode(result.right)
             childNodes.push(rootNode.rightNode)
+            processNode(rootNode.leftNode!!, iterator, childNodes, evaluatePredicate)
         }
     }
 
@@ -166,12 +168,14 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
      */
     internal fun buildDecisionTree(): PredicateNode<T> {
         val childNodes: LinkedList<PredicateNode<T>> = LinkedList()
-        val rootNode: PredicateNode<T> = PredicateNode(predicate = this.sortedPredicates.first(),
-                                                       predicateIndex = 0,
-                                                       nodeResult = this.decisionTreeClassifier.trainingData)
-        processNode(rootNode, childNodes, decisionTreeClassifier::evaluatePredicate)
+        val rootNode: PredicateNode<T> = PredicateNode(nodeResult = this.decisionTreeClassifier.trainingData)
+        val sortedPredicatesIterator: Iterator<Predicate<T>> = this.sortedPredicates.iterator()
+        processNode(rootNode, sortedPredicatesIterator, childNodes, decisionTreeClassifier::evaluatePredicate)
         while (childNodes.size > 0) {
-            processNode(childNodes.poll(), childNodes, decisionTreeClassifier::evaluatePredicate)
+            processNode(childNodes.poll(),
+                        sortedPredicatesIterator,
+                        childNodes,
+                        decisionTreeClassifier::evaluatePredicate)
         }
         return rootNode
     }
