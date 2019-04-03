@@ -31,9 +31,8 @@ data class Predicate<T>(val predicateFunction: PredicateFunction<DecisionTreeCla
  * Node used in the [DecisionTreeClassifier] to build the decision tree.
  * [T] indicates the type associated with the classification column in the training model.
  */
-data class PredicateNode<T>(var predicate: Predicate<T>,
-                            var predicateIndex: Int?,
-                            var nodeResult: List<DecisionTreeClassifierDataRow<T>>?,
+data class PredicateNode<T>(val nodeResult: List<DecisionTreeClassifierDataRow<T>>?,
+                            var predicateFunction: PredicateFunction<DecisionTreeClassifierDataRow<T>>? = null,
                             var result: PredicateResult<T>? = null,
                             var leftNode: PredicateNode<T>? = null,
                             var rightNode: PredicateNode<T>? = null)

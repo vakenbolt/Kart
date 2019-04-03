@@ -1,20 +1,15 @@
 package io.samuelagesilas
 
-import io.samuelagesilas.Diagnosis.*
+import io.samuelagesilas.DiagnosisTestData.Diagnosis
+import io.samuelagesilas.DiagnosisTestData.Diagnosis.*
+import io.samuelagesilas.DiagnosisTestData.QuestionLabels
+import io.samuelagesilas.DiagnosisTestData.classifier
+import io.samuelagesilas.DiagnosisTestData.trainingModel
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import kotlin.math.pow
-
-data class DataRow<T>(val diagnosisSymptom1: Symptom,
-                      val diagnosisSymptom2: Symptom,
-                      var diagnosis: Diagnosis? = null) : DecisionTreeClassifierDataRow<T>() {
-    override fun classification(): T {
-        @Suppress("UNCHECKED_CAST")
-        return diagnosis as T
-    }
-}
 
 class TrainingModelTest {
 
@@ -101,19 +96,20 @@ class TrainingModelTest {
 
     @Test
     fun `test training data predicates with classifier`() {
-        classifier.sortedPredicates.forEach { println("${it.predicateFunction.label}, ${it.avgImpurity}, ${it.informationGain}") }
         for (i in 1..100) {
             with(classifier.evaluate(trainingModel.first())) {
                 assertTrue(this == DiagnosisA || this == DiagnosisB || this == DiagnosisC)
             }
-            assertEquals(DiagnosisC, classifier.evaluate(trainingModel[2]))
-            assertEquals(classifier.evaluate(trainingModel[3]), DiagnosisD)
-            assertEquals(classifier.evaluate(trainingModel[4]), DiagnosisE)
-            assertEquals(classifier.evaluate(trainingModel[5]), DiagnosisB)
+            with(classifier.evaluate(trainingModel[2])) {
+                assertTrue(this == DiagnosisA || this == DiagnosisB || this == DiagnosisC)
+            }
+            assertEquals(DiagnosisD, classifier.evaluate(trainingModel[3]))
+            assertEquals(DiagnosisE, classifier.evaluate(trainingModel[4]))
+            assertEquals(DiagnosisB, classifier.evaluate(trainingModel[5]))
             with(classifier.evaluate(trainingModel[6])) {
                 assertTrue(this == DiagnosisA || this == DiagnosisB || this == DiagnosisC)
             }
-            assertEquals(classifier.evaluate(trainingModel[7]), DiagnosisC)
+            assertEquals(DiagnosisC, classifier.evaluate(trainingModel[7]))
         }
 
     }
