@@ -2,7 +2,6 @@ package io.samuelagesilas
 
 import io.samuelagesilas.FruitStandTestData.Color.*
 import io.samuelagesilas.FruitStandTestData.Fruit.*
-import io.samuelagesilas.FruitStandTestData.QuestionLabels
 
 
 data class FruitStandDataRow<T>(val color: FruitStandTestData.Color,
