@@ -69,7 +69,7 @@ val q5: PredicateFunction<DataRow<Diagnosis>> = PredicateFunction(label = Questi
 }
 ```
 
-Now we can create our decision tree, providing a list of predicates and the associated data model. Once the `DecisionTreeClassifier` class is instantiated it automatically makes the necessary calculations and builds the appropriate decision tree for data processing.
+Now we can create our decision tree, providing a list of predicates and the associated data model. Once the `DecisionTreeClassifier` class is instantiated, it automatically makes the necessary calculations and builds the appropriate decision tree.
 ```kotlin
 val p: List<PredicateFunction<DataRow<Diagnosis>>> = listOf(q1, q2, q3, q4, q5)
 val classifier: DecisionTreeClassifier<Diagnosis> = DecisionTreeClassifier(
