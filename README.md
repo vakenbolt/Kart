@@ -81,17 +81,17 @@ Here is a sample list of data provided to the classifier for analysis.
 ```kotlin
 val data: List<DataRow<Diagnosis>> = listOf(
     DataRow(Symptom1, Symptom2),
-    DataRow(Symptom1, Symptom1))
+    DataRow(Symptom1, Symptom4))
 ```
 
 To evaluate and retrieve the classification for a _row_ of data.
 ```kotlin
-classifier.evaluate(data[2])
+classifier.evaluate(data[1])
 ```
 
 Returns:
 ```
-DiagnosisC
+DiagnosisB
 ```
 
 
