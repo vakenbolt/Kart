@@ -143,7 +143,7 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
 
     private tailrec fun processNode(rootNode: PredicateNode<T>,
                                     iterator: Iterator<Predicate<T>>,
-                                    childNodes: LinkedList<PredicateNode<T>>,
+                                    rightNodes: LinkedList<PredicateNode<T>>,
                                     evaluatePredicate: (p: PredicateFunction<DecisionTreeClassifierDataRow<T>>,
                                                         trainingData: List<DecisionTreeClassifierDataRow<T>>) -> PredicateResult<T>) {
 
@@ -157,8 +157,8 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
         if (result.left.isNotEmpty() || result.left.size == 1 || result.left.map { it.classification() }.distinct().size == 1) {
             rootNode.leftNode = PredicateNode(result.left)
             rootNode.rightNode = PredicateNode(result.right)
-            childNodes.push(rootNode.rightNode)
-            processNode(rootNode.leftNode!!, iterator, childNodes, evaluatePredicate)
+            rightNodes.push(rootNode.rightNode)
+            processNode(rootNode.leftNode!!, iterator, rightNodes, evaluatePredicate)
         }
     }
 
@@ -167,14 +167,14 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
      * [DecisionTreeClassifier] to evaluate data.
      */
     internal fun buildDecisionTree(): PredicateNode<T> {
-        val childNodes: LinkedList<PredicateNode<T>> = LinkedList()
+        val rightNodes: LinkedList<PredicateNode<T>> = LinkedList()
         val rootNode: PredicateNode<T> = PredicateNode(nodeResult = this.decisionTreeClassifier.trainingData)
         val sortedPredicatesIterator: Iterator<Predicate<T>> = this.sortedPredicates.iterator()
-        processNode(rootNode, sortedPredicatesIterator, childNodes, decisionTreeClassifier::evaluatePredicate)
-        while (childNodes.size > 0) {
-            processNode(childNodes.poll(),
+        processNode(rootNode, sortedPredicatesIterator, rightNodes, decisionTreeClassifier::evaluatePredicate)
+        while (rightNodes.size > 0) {
+            processNode(rightNodes.poll(),
                         sortedPredicatesIterator,
-                        childNodes,
+                        rightNodes,
                         decisionTreeClassifier::evaluatePredicate)
         }
         return rootNode

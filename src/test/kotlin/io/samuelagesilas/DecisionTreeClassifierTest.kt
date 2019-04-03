@@ -1,8 +1,8 @@
 package io.samuelagesilas
 
-import io.samuelagesilas.FruitStandTestData.Fruit
 import io.samuelagesilas.DiagnosisTestData.Diagnosis
 import io.samuelagesilas.DiagnosisTestData.Symptom
+import io.samuelagesilas.FruitStandTestData.Fruit
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -59,6 +59,7 @@ class DecisionTreeClassifierTest {
         }
     }
 
+    @Test
     fun `test diagnosis decision tree structure`() {
         with(DecisionTreeNodeBuilder(DiagnosisTestData.classifier)) {
             val decisionTree: PredicateNode<Diagnosis> = this.buildDecisionTree()
