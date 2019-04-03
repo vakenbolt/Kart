@@ -87,11 +87,11 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
     }
 
     private fun classify(node: PredicateNode<T>,
-                         classifications: List<DecisionTreeClassifierDataRow<T>>): DecisionTreeClassifierDataRow<T> {
+                         partition: List<DecisionTreeClassifierDataRow<T>>): DecisionTreeClassifierDataRow<T> {
         return when {
-            (classifications.size == 1) -> classifications.first()
-            (classifications.size > 1) -> classifications[(0..(classifications.size - 1)).random()]
-            else -> classifications[(0..(node.nodeResult!!.size - 1)).random()]
+            (partition.size == 1) -> partition.first()
+            (partition.size > 1) -> partition[(0..(partition.size - 1)).random()]
+            else -> partition[(0..(node.nodeResult!!.size - 1)).random()]
         }
     }
 
@@ -102,17 +102,17 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
             if (this.size == 1
                 || this.isEmpty()
                 || node.predicateFunction == null
-            ) return classify(node, classifications = this).classification()!!
+            ) return classify(node, partition = this).classification()!!
         }
         val result: Boolean = node.predicateFunction!!.function.invoke(row)
         val nextNode: PredicateNode<T> = if (result) {
             if (node.leftNode == null) {
-                return classify(node, classifications = node.nodeResult).classification()!!
+                return classify(node, partition = node.nodeResult).classification()!!
             }
             node.leftNode!!
         } else {
             if (node.rightNode == null) {
-                return classify(node, classifications = node.nodeResult).classification()!!
+                return classify(node, partition = node.nodeResult).classification()!!
             }
             node.rightNode!!
         }
