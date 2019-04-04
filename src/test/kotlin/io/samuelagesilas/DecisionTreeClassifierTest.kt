@@ -64,34 +64,34 @@ class DecisionTreeClassifierTest {
         with(DecisionTreeNodeBuilder(DiagnosisTestData.classifier)) {
             val decisionTree: PredicateNode<Diagnosis> = this.buildDecisionTree()
             assertEquals("Question 4", decisionTree.predicateFunction!!.label)
-            assertEquals(1, decisionTree.leftNode!!.nodeResult!!.size)
-            assertEquals(7, decisionTree.rightNode!!.nodeResult!!.size)
+            assertEquals(7, decisionTree.leftNode!!.nodeResult!!.size)
+            assertEquals(1, decisionTree.rightNode!!.nodeResult!!.size)
 
-            assertNodeIsNull(decisionTree.leftNode!!)
+            assertNodeIsNull(decisionTree.rightNode!!)
 
-            val node1R: PredicateNode<Diagnosis> = decisionTree.rightNode!!
-            assertEquals("Question 3", node1R.predicateFunction!!.label)
-            assertNotNull(node1R.leftNode)
-            assertNotNull(node1R.rightNode)
-            assertEquals(7, node1R.nodeResult!!.size)
-            assertEquals(3, node1R.leftNode!!.nodeResult!!.size)
-            assertEquals(4, node1R.rightNode!!.nodeResult!!.size)
+            val node1L: PredicateNode<Diagnosis> = decisionTree.leftNode!!
+            assertEquals("Question 3", node1L.predicateFunction!!.label)
+            assertNotNull(node1L.leftNode)
+            assertNotNull(node1L.rightNode)
+            assertEquals(7, node1L.nodeResult!!.size)
+            assertEquals(4, node1L.leftNode!!.nodeResult!!.size)
+            assertEquals(3, node1L.rightNode!!.nodeResult!!.size)
 
-            val node2L: PredicateNode<Diagnosis> = node1R.leftNode!!
-            assertEquals("Question 1", node2L.predicateFunction!!.label)
-            assertEquals(3, node2L.nodeResult!!.size)
-            assertEquals(1, node2L.leftNode!!.nodeResult!!.size)
-            assertEquals(2, node2L.rightNode!!.nodeResult!!.size)
+            val node2R: PredicateNode<Diagnosis> = node1L.rightNode!!
+            assertEquals("Question 1", node2R.predicateFunction!!.label)
+            assertEquals(3, node2R.nodeResult!!.size)
+            assertEquals(2, node2R.leftNode!!.nodeResult!!.size)
+            assertEquals(1, node2R.rightNode!!.nodeResult!!.size)
 
-            assertNodeIsNull(node2L.leftNode!!)
+            assertNodeIsNull(node2R.rightNode!!)
 
-            val node3R: PredicateNode<Diagnosis> = node2L.rightNode!!
-            assertEquals("Question 5", node3R.predicateFunction!!.label)
-            assertEquals(1, node3R.leftNode!!.nodeResult!!.size)
-            assertEquals(1, node3R.rightNode!!.nodeResult!!.size)
+            val node3L: PredicateNode<Diagnosis> = node2R.leftNode!!
+            assertEquals("Question 5", node3L.predicateFunction!!.label)
+            assertEquals(1, node3L.leftNode!!.nodeResult!!.size)
+            assertEquals(1, node3L.rightNode!!.nodeResult!!.size)
 
-            assertNodeIsNull(node3R.leftNode!!)
-            assertNodeIsNull(node3R.rightNode!!)
+            assertNodeIsNull(node3L.leftNode!!)
+            assertNodeIsNull(node3L.rightNode!!)
         }
     }
 }
