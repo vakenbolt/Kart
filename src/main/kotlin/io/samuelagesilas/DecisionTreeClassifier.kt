@@ -18,19 +18,6 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
      */
     val rootGiniImpurity: Double = this.calculateGiniImpurity(trainingData)
 
-    /**
-     * [List] associated to the list of predicate functions sorted in descending order by information gain.
-     */
-    val sortedPredicates: List<Predicate<T>> = this.calculateInformationGain(rows = trainingData)
-        .sortedByDescending { it.informationGain }
-        .let { p: List<Predicate<T>> ->
-            val filteredList: MutableList<Predicate<T>> = mutableListOf(p[0])
-            for (i in 1 until p.indexOfFirst { i: Predicate<T> -> i.informationGain == 0.0 }) {
-                if (p[i] != p[0] && p[i].informationGain != p[0].informationGain) filteredList.add(p[i])
-            }
-            filteredList
-        }
-
     private var decisionTree: PredicateNode<T>
 
     private fun calculateGiniImpurity(trainingDataRows: List<DecisionTreeClassifierDataRow<T>>): Double {
@@ -68,12 +55,12 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
         return PredicateResult(left = resolvedAsTrue.toList(), right = resolvedAsFalse.toList())
     }
 
-    private fun calculateInformationGain(rows: List<DecisionTreeClassifierDataRow<T>>): List<Predicate<T>> {
+    internal fun calculateInformationGain(rows: List<DecisionTreeClassifierDataRow<T>>): List<Predicate<T>> {
         val predicateInformationGain: MutableList<Predicate<T>> = mutableListOf()
         @Suppress("UNCHECKED_CAST")
         val p = predicateFunctions as List<PredicateFunction<DecisionTreeClassifierDataRow<T>>>
         p.iterator().forEach { predicateFunction: PredicateFunction<DecisionTreeClassifierDataRow<T>> ->
-            val result: PredicateResult<T> = evaluatePredicate(predicateFunction, this.trainingData)
+            val result: PredicateResult<T> = evaluatePredicate(predicateFunction, rows)
             val leftGiniImpurity: Double = this.calculateGiniImpurity(trainingDataRows = result.left)
             val rightGiniImpurity: Double = this.calculateGiniImpurity(trainingDataRows = result.right)
 
@@ -139,18 +126,33 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
  * Builds the decision tree using the provided [decisionTreeClassifier].
  */
 class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTreeClassifier<T>) {
-    private val sortedPredicates: List<Predicate<T>> = decisionTreeClassifier.sortedPredicates
 
     private tailrec fun processNode(rootNode: PredicateNode<T>,
-                                    iterator: Iterator<Predicate<T>>,
                                     rightNodes: LinkedList<PredicateNode<T>>,
                                     evaluatePredicate: (p: PredicateFunction<DecisionTreeClassifierDataRow<T>>,
                                                         trainingData: List<DecisionTreeClassifierDataRow<T>>) -> PredicateResult<T>) {
 
-        if (!iterator.hasNext()) return
-        with(rootNode.nodeResult!!) { if (this.size == 1 || this.map { it.classification() }.distinct().size == 1) return }
-        val f: PredicateFunction<DecisionTreeClassifierDataRow<T>> = iterator.next().predicateFunction
+        with(rootNode.nodeResult!!) {
+            if (this.size == 1 || this.map { it.classification() }.distinct().size == 1) return
+        }
+
+        //predicate with the highest information gain against the current filtered set
+        val pGain = this.decisionTreeClassifier
+            .calculateInformationGain(rootNode.nodeResult)
+            .sortedByDescending { it.informationGain }
+            .let { p: List<Predicate<T>> ->
+                val filteredList: MutableList<Predicate<T>> = mutableListOf(p[0])
+                for (i in 1 until p.indexOfFirst { i: Predicate<T> -> i.informationGain == 0.0 }) {
+                    if (p[i] != p[0] && p[i].informationGain != p[0].informationGain) filteredList.add(p[i])
+                }
+                filteredList
+            }
+            .first()
+        if (pGain.informationGain == 0.0) return
+
+        val f: PredicateFunction<DecisionTreeClassifierDataRow<T>> = pGain.predicateFunction
         rootNode.result = evaluatePredicate.invoke(f, rootNode.nodeResult)
+        if (rootNode.result!!.left.isEmpty() || rootNode.result!!.right.isEmpty()) return
         rootNode.predicateFunction = f
 
         val result: PredicateResult<T> = rootNode.result!!
@@ -158,7 +160,7 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
             rootNode.leftNode = PredicateNode(result.left)
             rootNode.rightNode = PredicateNode(result.right)
             rightNodes.push(rootNode.rightNode)
-            processNode(rootNode.leftNode!!, iterator, rightNodes, evaluatePredicate)
+            processNode(rootNode.leftNode!!, rightNodes, evaluatePredicate)
         }
     }
 
@@ -169,13 +171,14 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
     internal fun buildDecisionTree(): PredicateNode<T> {
         val rightNodes: LinkedList<PredicateNode<T>> = LinkedList()
         val rootNode: PredicateNode<T> = PredicateNode(nodeResult = this.decisionTreeClassifier.trainingData)
-        val sortedPredicatesIterator: Iterator<Predicate<T>> = this.sortedPredicates.iterator()
-        processNode(rootNode, sortedPredicatesIterator, rightNodes, decisionTreeClassifier::evaluatePredicate)
+        processNode(rootNode, rightNodes, decisionTreeClassifier::evaluatePredicate)
+        var counter = 0
         while (rightNodes.size > 0) {
+            counter+=1; if (counter > 999) break;
             processNode(rightNodes.poll(),
-                        sortedPredicatesIterator,
                         rightNodes,
                         decisionTreeClassifier::evaluatePredicate)
+
         }
         return rootNode
     }
