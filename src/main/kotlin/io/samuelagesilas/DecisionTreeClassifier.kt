@@ -172,13 +172,8 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
         val rightNodes: LinkedList<PredicateNode<T>> = LinkedList()
         val rootNode: PredicateNode<T> = PredicateNode(nodeResult = this.decisionTreeClassifier.trainingData)
         processNode(rootNode, rightNodes, decisionTreeClassifier::evaluatePredicate)
-        var counter = 0
         while (rightNodes.size > 0) {
-            counter+=1; if (counter > 999) break;
-            processNode(rightNodes.poll(),
-                        rightNodes,
-                        decisionTreeClassifier::evaluatePredicate)
-
+            processNode(rightNodes.poll(), rightNodes, decisionTreeClassifier::evaluatePredicate)
         }
         return rootNode
     }
