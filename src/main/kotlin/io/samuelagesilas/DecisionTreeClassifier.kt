@@ -13,28 +13,23 @@ import kotlin.math.pow
 class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClassifierDataRow<T>>,
                                 private val predicateFunctions: List<PredicateFunction<*>>) {
 
-    /**
-     * The calculated Gini impurity for the given [trainingData].
-     */
-    val rootGiniImpurity: Double = this.calculateGiniImpurity(trainingData)
+    private var decisionTree: PredicateNode<T> = DecisionTreeNodeBuilder<T>(decisionTreeClassifier = this).build()
 
-    private var decisionTree: PredicateNode<T>
-
-    private fun calculateGiniImpurity(trainingDataRows: List<DecisionTreeClassifierDataRow<T>>): Double {
+    internal fun calculateGiniImpurity(rows: List<DecisionTreeClassifierDataRow<T>>): Double {
         val classificationCounts: MutableMap<T, Int> = mutableMapOf()
-        val distinctClassification: List<DecisionTreeClassifierDataRow<T>> = trainingDataRows.distinctBy {
+        val distinctClassification: List<DecisionTreeClassifierDataRow<T>> = rows.distinctBy {
             it.classification()
         }
         //check for the number of times a classification appears in the trainingDataRows list.
         distinctClassification.forEach { trainingDataRow: DecisionTreeClassifierDataRow<T> ->
             classificationCounts[trainingDataRow.classification()!!] =
-                trainingDataRows.count { m: DecisionTreeClassifierDataRow<T> ->
+                rows.count { m: DecisionTreeClassifierDataRow<T> ->
                     m.classification()!!.toString() == trainingDataRow.classification().toString()
                 }
         }
         val probabilities: MutableList<Double> = mutableListOf()
         classificationCounts.forEach { _, v ->
-            probabilities.add((v.toDouble() / trainingDataRows.size).pow(2))
+            probabilities.add((v.toDouble() / rows.size).pow(2))
         }
         return 1 - probabilities.sum()
     }
@@ -57,17 +52,18 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
 
     internal fun calculateInformationGain(rows: List<DecisionTreeClassifierDataRow<T>>): List<Predicate<T>> {
         val predicateInformationGain: MutableList<Predicate<T>> = mutableListOf()
+        val foo : Double = this.calculateGiniImpurity(rows)
         @Suppress("UNCHECKED_CAST")
         val p = predicateFunctions as List<PredicateFunction<DecisionTreeClassifierDataRow<T>>>
         p.iterator().forEach { predicateFunction: PredicateFunction<DecisionTreeClassifierDataRow<T>> ->
             val result: PredicateResult<T> = evaluatePredicate(predicateFunction, rows)
-            val leftGiniImpurity: Double = this.calculateGiniImpurity(trainingDataRows = result.left)
-            val rightGiniImpurity: Double = this.calculateGiniImpurity(trainingDataRows = result.right)
+            val leftGiniImpurity: Double = this.calculateGiniImpurity(rows = result.left)
+            val rightGiniImpurity: Double = this.calculateGiniImpurity(rows = result.right)
 
             //weighted average of each question
             val avgImpurity: Double = (result.left.size.toDouble() / rows.size) * leftGiniImpurity +
                     (result.right.size.toDouble() / rows.size) * rightGiniImpurity
-            val informationGain: Double = this.rootGiniImpurity - avgImpurity
+            val informationGain: Double = foo - avgImpurity
             predicateInformationGain.add(Predicate(predicateFunction, avgImpurity, informationGain))
         }
         return predicateInformationGain.toList()
@@ -107,11 +103,6 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
     }
 
 
-    init {
-        val f = DecisionTreeNodeBuilder<T>(decisionTreeClassifier = this)
-        this.decisionTree = f.buildDecisionTree()
-    }
-
     fun evaluate(row: DecisionTreeClassifierDataRow<T>): T = evaluateWithTree(row, decisionTree)
 
     fun evaluate(rows: List<DecisionTreeClassifierDataRow<T>>): List<T> {
@@ -137,20 +128,13 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
         }
 
         //predicate with the highest information gain against the current filtered set
-        val pGain = this.decisionTreeClassifier
+        val bestPredicate = this.decisionTreeClassifier
             .calculateInformationGain(rootNode.nodeResult)
             .sortedByDescending { it.informationGain }
-            .let { p: List<Predicate<T>> ->
-                val filteredList: MutableList<Predicate<T>> = mutableListOf(p[0])
-                for (i in 1 until p.indexOfFirst { i: Predicate<T> -> i.informationGain == 0.0 }) {
-                    if (p[i] != p[0] && p[i].informationGain != p[0].informationGain) filteredList.add(p[i])
-                }
-                filteredList
-            }
             .first()
-        if (pGain.informationGain == 0.0) return
+        if (bestPredicate.informationGain == 0.0) return
 
-        val f: PredicateFunction<DecisionTreeClassifierDataRow<T>> = pGain.predicateFunction
+        val f: PredicateFunction<DecisionTreeClassifierDataRow<T>> = bestPredicate.predicateFunction
         rootNode.result = evaluatePredicate.invoke(f, rootNode.nodeResult)
         if (rootNode.result!!.left.isEmpty() || rootNode.result!!.right.isEmpty()) return
         rootNode.predicateFunction = f
@@ -168,7 +152,7 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
      * Returns the root node of the generated decision tree classifier. The resulting tree is used by the
      * [DecisionTreeClassifier] to evaluate data.
      */
-    internal fun buildDecisionTree(): PredicateNode<T> {
+    internal fun build(): PredicateNode<T> {
         val leftNodes: LinkedList<PredicateNode<T>> = LinkedList()
         val rootNode: PredicateNode<T> = PredicateNode(nodeResult = this.decisionTreeClassifier.trainingData)
         processNode(rootNode, leftNodes, decisionTreeClassifier::evaluatePredicate)

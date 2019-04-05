@@ -62,7 +62,7 @@ class DecisionTreeClassifierTest {
     @Test
     fun `test diagnosis decision tree structure`() {
         with(DecisionTreeNodeBuilder(DiagnosisTestData.classifier)) {
-            val decisionTree: PredicateNode<Diagnosis> = this.buildDecisionTree()
+            val decisionTree: PredicateNode<Diagnosis> = this.build()
             assertEquals("Question 4", decisionTree.predicateFunction!!.label)
             assertEquals(7, decisionTree.leftNode!!.nodeResult!!.size)
             assertEquals(1, decisionTree.rightNode!!.nodeResult!!.size)

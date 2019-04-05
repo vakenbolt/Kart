@@ -20,7 +20,7 @@ class TrainingModelTest {
             (1.toDouble() / 8).pow(2),
             (1.toDouble() / 8).pow(2)
         ).sum()
-        Assertions.assertEquals(classifier.rootGiniImpurity, n)
+        Assertions.assertEquals(classifier.calculateGiniImpurity(trainingModel), n)
     }
 
     fun `test for correct order of predicateFunction labels`() {
@@ -46,7 +46,7 @@ class TrainingModelTest {
             .calculateInformationGain(trainingModel)
             .first { it.predicateFunction.label == "Question 1" }
         assertEquals(p.avgImpurity, avgImpurity)
-        assertEquals(p.informationGain, classifier.rootGiniImpurity - avgImpurity)
+        assertEquals(p.informationGain, classifier.calculateGiniImpurity(trainingModel) - avgImpurity)
     }
 
     @Test
@@ -66,7 +66,7 @@ class TrainingModelTest {
             .calculateInformationGain(trainingModel)
             .first { it.predicateFunction.label == "Question 4" }
         assertEquals(p.avgImpurity, avgImpurity)
-        assertEquals(p.informationGain, classifier.rootGiniImpurity - avgImpurity)
+        assertEquals(p.informationGain, classifier.calculateGiniImpurity(trainingModel) - avgImpurity)
     }
 
     @Test
@@ -88,7 +88,7 @@ class TrainingModelTest {
             .calculateInformationGain(trainingModel)
             .first { it.predicateFunction.label == "Question 3" }
         assertEquals(p.avgImpurity, avgImpurity)
-        assertEquals(p.informationGain, classifier.rootGiniImpurity - avgImpurity)
+        assertEquals(p.informationGain, classifier.calculateGiniImpurity(trainingModel) - avgImpurity)
     }
 
     @Test
