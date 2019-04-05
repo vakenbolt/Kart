@@ -55,7 +55,7 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
 
     internal fun calculateInformationGain(rows: List<DecisionTreeClassifierDataRow<T>>): List<Predicate<T>> {
         val predicateInformationGain: MutableList<Predicate<T>> = mutableListOf()
-        val giniImpurityForAllRows : Double = this.calculateGiniImpurity(rows)
+        val giniImpurityForAllRows: Double = this.calculateGiniImpurity(rows)
         //iterate through the list of predicates to find the one with the highest information gain
         @Suppress("UNCHECKED_CAST")
         val p = predicateFunctions as List<PredicateFunction<DecisionTreeClassifierDataRow<T>>>
@@ -82,7 +82,7 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
             (partition.size == 1) -> partition.first()
             //if the partition size is greater than 1, we must randomly choose a classification from the partitioned list
             (partition.size > 1) -> partition[(0..(partition.size - 1)).random()]
-            //if the partition is empty, randomly choose a classification from the result of predicate
+            //if the partition is empty, randomly choose a classification from the un-partitioned list.
             else -> partition[(0..(node.nodeResult!!.size - 1)).random()]
         }.classification()!!
     }
@@ -134,7 +134,7 @@ class DecisionTreeClassifier<T>(internal val trainingData: List<DecisionTreeClas
 class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTreeClassifier<T>) {
 
     private tailrec fun processNode(rootNode: PredicateNode<T>,
-                                    rightNodes: LinkedList<PredicateNode<T>>,
+                                    leftNodes: LinkedList<PredicateNode<T>>,
                                     evaluatePredicate: (p: PredicateFunction<DecisionTreeClassifierDataRow<T>>,
                                                         trainingData: List<DecisionTreeClassifierDataRow<T>>) -> PredicateResult<T>) {
 
@@ -147,19 +147,29 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
             .calculateInformationGain(rootNode.nodeResult)
             .sortedByDescending { it.informationGain }
             .first()
+        //turn the current node into a leaf node if no further splitting can occur.
         if (bestPredicate.informationGain == 0.0) return
 
         val pFunc: PredicateFunction<DecisionTreeClassifierDataRow<T>> = bestPredicate.predicateFunction
         rootNode.result = evaluatePredicate.invoke(pFunc, rootNode.nodeResult)
+        //turn the current node into a leaf node if either of the partitions(left or right) is empty
         if (rootNode.result!!.left.isEmpty() || rootNode.result!!.right.isEmpty()) return
         rootNode.predicateFunction = pFunc
 
+        //at this point the node is a decision node.
         val result: PredicateResult<T> = rootNode.result!!
-        if (result.right.isNotEmpty() || result.right.size == 1 || result.left.map { it.classification() }.distinct().size == 1) {
+
+        //recursively process the true or right node if it is not empty.
+        if (result.right.isNotEmpty()
+            || result.right.size == 1
+            || result.left.map { it.classification() }.distinct().size == 1) {
+            //add child PredicateNode's for both the left and right side. These will be processed independently from
+            // each other.
             rootNode.leftNode = PredicateNode(result.left)
             rootNode.rightNode = PredicateNode(result.right)
-            rightNodes.push(rootNode.leftNode)
-            processNode(rootNode.rightNode!!, rightNodes, evaluatePredicate)
+            //the left side will be pushed into a linked list to be processed later. (We process the right side first.)
+            leftNodes.push(rootNode.leftNode)
+            processNode(rootNode.rightNode!!, leftNodes, evaluatePredicate)
         }
     }
 
@@ -171,6 +181,9 @@ class DecisionTreeNodeBuilder<T>(private val decisionTreeClassifier: DecisionTre
         val leftNodes: LinkedList<PredicateNode<T>> = LinkedList()
         val rootNode: PredicateNode<T> = PredicateNode(nodeResult = this.decisionTreeClassifier.trainingData)
         processNode(rootNode, leftNodes, decisionTreeClassifier::evaluatePredicate)
+        //recursively call processNode until there are no remaining left nodes to process. Right nodes are always
+        // processed first, while left nodes are placed in a queue until there are no more right nodes to process for a
+        // given node.
         while (leftNodes.size > 0) {
             processNode(leftNodes.poll(), leftNodes, decisionTreeClassifier::evaluatePredicate)
         }
